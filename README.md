@@ -33,7 +33,12 @@ Standard Readme is designed for open source libraries. Although it’s [historic
 
 ## Prerequisites
 
-Your machine needs to have
+If you want to run Nomad in a virtual machine, you may need network access to the virtual machine.
+```
+sudo apt-get install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+sudo adduser `id -un` libvirt
+sudo adduser `id -un` kvm
+```
 
 ## Usage
 
@@ -48,17 +53,16 @@ $ standard-readme-spec
 
 ```
 git clone https://github.com/lingfenghsiang/Nomad.git
-
-docker run -v ./Nomad:/root/code -it --rm docklf/ubuntu20-kerncomp:v0.0
+docker run -v ./Nomad:/root/code -it --rm docklf/ubuntu20-kerncomp:v0.1
 ```
-
+In the docker container, please execute:
 ```
 cd /root/code
 patch -p1 < src/implementation_patches/nomad.patch
 make menuconfig
 make deb-pkg -j`nproc`
 ```
-apt install python3
+
 ## Matching paper results
 
 If your README is compliant with Standard-Readme and you're on GitHub, it would be great if you could add the badge. This allows people to link back to this Spec, and helps adoption of the README. The badge is **not required**.

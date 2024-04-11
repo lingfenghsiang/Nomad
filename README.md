@@ -46,9 +46,19 @@ $ standard-readme-spec
 
 ### Compiling the code
 
-To use the generator, look at [generator-standard-readme](https://github.com/RichardLitt/generator-standard-readme). There is a global executable to run the generator in that package, aliased as `standard-readme`.
+```
+git clone https://github.com/lingfenghsiang/Nomad.git
 
+docker run -v ./Nomad:/root/code -it --rm docklf/ubuntu20-kerncomp:v0.0
+```
 
+```
+cd /root/code
+patch -p1 < src/implementation_patches/nomad.patch
+make menuconfig
+make deb-pkg -j`nproc`
+```
+apt install python3
 ## Matching paper results
 
 If your README is compliant with Standard-Readme and you're on GitHub, it would be great if you could add the badge. This allows people to link back to this Spec, and helps adoption of the README. The badge is **not required**.

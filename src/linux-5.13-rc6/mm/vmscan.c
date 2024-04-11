@@ -41,7 +41,6 @@
 #include <linux/kthread.h>
 #include <linux/freezer.h>
 #include <linux/memcontrol.h>
-#include <linux/migrate.h>
 #include <linux/delayacct.h>
 #include <linux/sysctl.h>
 #include <linux/oom.h>
@@ -516,35 +515,6 @@ static long add_nr_deferred(long nr, struct shrinker *shrinker,
 	return atomic_long_add_return(nr, &shrinker->nr_deferred[nid]);
 }
 
-static inline bool can_reclaim_anon_pages(struct mem_cgroup *memcg,
-					  int node_id,
-					  struct scan_control *sc)
-{
-	if (memcg == NULL) {
-		/*
-		 * For non-memcg reclaim, is there
-		 * space in any swap device?
-		 */
-		if (get_nr_swap_pages() > 0)
-			return true;
-	} else {
-		/* Is the memcg below its swap limit? */
-		if (mem_cgroup_get_nr_swap_pages(memcg) > 0)
-			return true;
-	}
-
-	/*
-	 * The page can not be swapped.
-	 *
-	 * Can it be reclaimed from this node via demotion?
-	 */
-	if (next_demotion_node(node_id) >= 0)
-		return true;
-
-	/* No way to reclaim anon pages */
-	return false;
-}
-
 /*
  * This misses isolated pages which are not accounted for to save counters.
  * As the data only determines if reclaim or compaction continues, it is
@@ -556,7 +526,7 @@ unsigned long zone_reclaimable_pages(struct zone *zone)
 
 	nr = zone_page_state_snapshot(zone, NR_ZONE_INACTIVE_FILE) +
 		zone_page_state_snapshot(zone, NR_ZONE_ACTIVE_FILE);
-	if (can_reclaim_anon_pages(NULL, zone_to_nid(zone), NULL))
+	if (get_nr_swap_pages() > 0)
 		nr += zone_page_state_snapshot(zone, NR_ZONE_INACTIVE_ANON) +
 			zone_page_state_snapshot(zone, NR_ZONE_ACTIVE_ANON);
 
@@ -1261,30 +1231,6 @@ static enum page_references page_check_references(struct page *page,
 	return PAGEREF_RECLAIM;
 }
 
-static bool migrate_demote_page_ok(struct page *page,
-				   struct scan_control *sc)
-{
-	int next_nid = next_demotion_node(page_to_nid(page));
-
-	VM_BUG_ON_PAGE(!PageLocked(page), page);
-	VM_BUG_ON_PAGE(PageHuge(page), page);
-	VM_BUG_ON_PAGE(PageLRU(page), page);
-
-	if (!numa_demotion_enabled)
-		return false;
-
-	/* It is pointless to do demotion in memcg reclaim */
-	if (cgroup_reclaim(sc))
-		return false;
-
-	if (next_nid == NUMA_NO_NODE)
-		return false;
-	if (PageTransHuge(page) && !thp_migration_supported())
-		return false;
-
-	return true;
-}
-
 /* Check if a page is dirty or under writeback */
 static void page_check_dirty_writeback(struct page *page,
 				       bool *dirty, bool *writeback)
@@ -1315,52 +1261,6 @@ static void page_check_dirty_writeback(struct page *page,
 		mapping->a_ops->is_dirty_writeback(page, dirty, writeback);
 }
 
-static struct page *alloc_demote_page(struct page *page, unsigned long node)
-{
-	struct migration_target_control mtc = {
-		/*
-		 * Allocate from 'node', or fail the quickly and quietly.
-		 * When this happens, 'page; will likely just be discarded
-		 * instead of migrated.
-		 */
-		.gfp_mask = (GFP_HIGHUSER_MOVABLE & ~__GFP_RECLAIM) |
-			    __GFP_THISNODE  | __GFP_NOWARN |
-			    __GFP_NOMEMALLOC | GFP_NOWAIT,
-		.nid = node
-	};
-
-	return alloc_migration_target(page, (unsigned long)&mtc);
-}
-
-/*
- * Take pages on @demote_list and attempt to demote them to
- * another node.  Pages which are not demoted are left on
- * @demote_pages.
- */
-static unsigned int demote_page_list(struct list_head *demote_pages,
-				     struct pglist_data *pgdat,
-				     struct scan_control *sc)
-{
-	int target_nid = next_demotion_node(pgdat->node_id);
-	unsigned int nr_succeeded = 0;
-	int err;
-
-	if (list_empty(demote_pages))
-		return 0;
-
-	/* Demotion ignores all cpuset and mempolicy settings */
-	err = migrate_pages(demote_pages, alloc_demote_page, NULL,
-			    target_nid, MIGRATE_ASYNC, MR_DEMOTION,
-			    &nr_succeeded);
-
-	if (current_is_kswapd())
-		__count_vm_events(PGDEMOTE_KSWAPD, nr_succeeded);
-	else
-		__count_vm_events(PGDEMOTE_DIRECT, nr_succeeded);
-
-	return nr_succeeded;
-}
-
 /*
  * shrink_page_list() returns the number of reclaimed pages
  */
@@ -1372,15 +1272,12 @@ static unsigned int shrink_page_list(struct list_head *page_list,
 {
 	LIST_HEAD(ret_pages);
 	LIST_HEAD(free_pages);
-	LIST_HEAD(demote_pages);
 	unsigned int nr_reclaimed = 0;
 	unsigned int pgactivate = 0;
-	bool do_demote_pass = true;
 
 	memset(stat, 0, sizeof(*stat));
 	cond_resched();
 
-retry:
 	while (!list_empty(page_list)) {
 		struct address_space *mapping;
 		struct page *page;
@@ -1527,16 +1424,6 @@ retry:
 		case PAGEREF_RECLAIM:
 		case PAGEREF_RECLAIM_CLEAN:
 			; /* try to reclaim the page below */
-		}
-
-		/*
-		 * Before reclaiming the page, try to relocate
-		 * its contents to another node.
-		 */
-		if (do_demote_pass && migrate_demote_page_ok(page, sc)) {
-			list_add(&page->lru, &demote_pages);
-			unlock_page(page);
-			continue;
 		}
 
 		/*
@@ -1788,17 +1675,6 @@ keep_locked:
 keep:
 		list_add(&page->lru, &ret_pages);
 		VM_BUG_ON_PAGE(PageLRU(page) || PageUnevictable(page), page);
-	}
-	/* 'page_list' is always empty here */
-
-	/* Migrate pages selected for demotion */
-	nr_reclaimed += demote_page_list(&demote_pages, pgdat, sc);
-	/* Pages that could not be demoted are still in @demote_pages */
-	if (!list_empty(&demote_pages)) {
-		/* Pages which failed to demoted go back on @page_list for retry: */
-		list_splice_init(&demote_pages, page_list);
-		do_demote_pass = false;
-		goto retry;
 	}
 
 	pgactivate = stat->nr_activate[0] + stat->nr_activate[1];
@@ -2557,7 +2433,6 @@ enum scan_balance {
 static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 			   unsigned long *nr)
 {
-	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
 	struct mem_cgroup *memcg = lruvec_memcg(lruvec);
 	unsigned long anon_cost, file_cost, total_cost;
 	int swappiness = mem_cgroup_swappiness(memcg);
@@ -2568,7 +2443,7 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	enum lru_list lru;
 
 	/* If we have no swap space, do not bother scanning anon pages. */
-	if (!sc->may_swap || !can_reclaim_anon_pages(memcg, pgdat->node_id, sc)) {
+	if (!sc->may_swap || mem_cgroup_get_nr_swap_pages(memcg) <= 0) {
 		scan_balance = SCAN_FILE;
 		goto out;
 	}
@@ -2743,26 +2618,6 @@ out:
 	}
 }
 
-/*
- * Anonymous LRU management is a waste if there is
- * ultimately no way to reclaim the memory.
- */
-bool anon_should_be_aged(struct lruvec *lruvec)
-{
-	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
-
-	/* Aging the anon LRU is valuable if swap is present: */
-	if (total_swap_pages > 0)
-		return true;
-
-	/* Also valuable if anon pages can be demoted: */
-	if (next_demotion_node(pgdat->node_id) >= 0)
-		return true;
-
-	/* No way to reclaim anon pages.  Should not age anon LRUs: */
-	return false;
-}
-
 static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 {
 	unsigned long nr[NR_LRU_LISTS];
@@ -2872,8 +2727,7 @@ static void shrink_lruvec(struct lruvec *lruvec, struct scan_control *sc)
 	 * Even if we did not try to evict anon pages at all, we want to
 	 * rebalance the anon lru active/inactive ratio.
 	 */
-	if (anon_should_be_aged(lruvec) &&
-	    inactive_is_low(lruvec, LRU_INACTIVE_ANON))
+	if (total_swap_pages && inactive_is_low(lruvec, LRU_INACTIVE_ANON))
 		shrink_active_list(SWAP_CLUSTER_MAX, lruvec,
 				   sc, LRU_ACTIVE_ANON);
 }
@@ -2943,7 +2797,7 @@ static inline bool should_continue_reclaim(struct pglist_data *pgdat,
 	 */
 	pages_for_compaction = compact_gap(sc->order);
 	inactive_lru_pages = node_page_state(pgdat, NR_INACTIVE_FILE);
-	if (can_reclaim_anon_pages(NULL, pgdat->node_id, sc))
+	if (get_nr_swap_pages() > 0)
 		inactive_lru_pages += node_page_state(pgdat, NR_INACTIVE_ANON);
 
 	return inactive_lru_pages > pages_for_compaction;
@@ -3702,11 +3556,10 @@ static void age_active_anon(struct pglist_data *pgdat,
 	struct mem_cgroup *memcg;
 	struct lruvec *lruvec;
 
-	lruvec = mem_cgroup_lruvec(NULL, pgdat);
-
-	if (!anon_should_be_aged(lruvec))
+	if (!total_swap_pages)
 		return;
 
+	lruvec = mem_cgroup_lruvec(NULL, pgdat);
 	if (!inactive_is_low(lruvec, LRU_INACTIVE_ANON))
 		return;
 

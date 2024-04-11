@@ -18,8 +18,7 @@ ret=0
 
 cleanup() {
 	local ns
-	local jobs
-	readonly jobs="$(jobs -p)"
+	local -r jobs="$(jobs -p)"
 	[ -n "${jobs}" ] && kill -1 ${jobs} 2>/dev/null
 	rm -f $STATS
 
@@ -109,7 +108,7 @@ chk_gro() {
 
 if [ ! -f ../bpf/xdp_dummy.o ]; then
 	echo "Missing xdp_dummy helper. Build bpf selftest first"
-	exit 1
+	exit -1
 fi
 
 create_ns

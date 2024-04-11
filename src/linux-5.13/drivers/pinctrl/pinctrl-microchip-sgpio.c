@@ -845,10 +845,8 @@ static int microchip_sgpio_probe(struct platform_device *pdev)
 	i = 0;
 	device_for_each_child_node(dev, fwnode) {
 		ret = microchip_sgpio_register_bank(dev, priv, fwnode, i++);
-		if (ret) {
-			fwnode_handle_put(fwnode);
+		if (ret)
 			return ret;
-		}
 	}
 
 	if (priv->in.gpio.ngpio != priv->out.gpio.ngpio) {

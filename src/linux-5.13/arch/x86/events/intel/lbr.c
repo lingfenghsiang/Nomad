@@ -731,8 +731,7 @@ void reserve_lbr_buffers(void)
 		if (!kmem_cache || cpuc->lbr_xsave)
 			continue;
 
-		cpuc->lbr_xsave = kmem_cache_alloc_node(kmem_cache,
-							GFP_KERNEL | __GFP_ZERO,
+		cpuc->lbr_xsave = kmem_cache_alloc_node(kmem_cache, GFP_KERNEL,
 							cpu_to_node(cpu));
 	}
 }

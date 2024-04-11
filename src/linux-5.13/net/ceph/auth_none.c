@@ -69,7 +69,7 @@ static int build_request(struct ceph_auth_client *ac, void *buf, void *end)
  * the generic auth code decode the global_id, and we carry no actual
  * authenticate state, so nothing happens here.
  */
-static int handle_reply(struct ceph_auth_client *ac, u64 global_id,
+static int handle_reply(struct ceph_auth_client *ac, int result,
 			void *buf, void *end, u8 *session_key,
 			int *session_key_len, u8 *con_secret,
 			int *con_secret_len)
@@ -77,8 +77,7 @@ static int handle_reply(struct ceph_auth_client *ac, u64 global_id,
 	struct ceph_auth_none_info *xi = ac->private;
 
 	xi->starting = false;
-	ceph_auth_set_global_id(ac, global_id);
-	return 0;
+	return result;
 }
 
 static void ceph_auth_none_destroy_authorizer(struct ceph_authorizer *a)

@@ -230,7 +230,7 @@ out:
 }
 
 /**
- * ipu_irq_unmap() - unmap an IPU interrupt source
+ * ipu_irq_map() - map an IPU interrupt source to an IRQ number
  * @source:	interrupt source bit position (see ipu_irq_map())
  * @return:	0 or negative error code
  */

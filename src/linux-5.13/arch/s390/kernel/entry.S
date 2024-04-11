@@ -418,7 +418,6 @@ ENTRY(\name)
 	xgr	%r6,%r6
 	xgr	%r7,%r7
 	xgr	%r10,%r10
-	xc	__PT_FLAGS(8,%r11),__PT_FLAGS(%r11)
 	mvc	__PT_R8(64,%r11),__LC_SAVE_AREA_ASYNC
 	stmg	%r8,%r9,__PT_PSW(%r11)
 	tm	%r8,0x0001		# coming from user space?
@@ -652,9 +651,9 @@ ENDPROC(stack_overflow)
 .Lcleanup_sie_mcck:
 	larl	%r13,.Lsie_entry
 	slgr	%r9,%r13
-	lghi	%r13,.Lsie_skip - .Lsie_entry
+	larl	%r13,.Lsie_skip
 	clgr	%r9,%r13
-	jhe	.Lcleanup_sie_int
+	jh	.Lcleanup_sie_int
 	oi	__LC_CPU_FLAGS+7, _CIF_MCCK_GUEST
 .Lcleanup_sie_int:
 	BPENTER	__SF_SIE_FLAGS(%r15),(_TIF_ISOLATE_BP|_TIF_ISOLATE_BP_GUEST)

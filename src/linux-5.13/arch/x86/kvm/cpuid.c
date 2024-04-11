@@ -655,7 +655,6 @@ static int __do_cpuid_func_emulated(struct kvm_cpuid_array *array, u32 func)
 		if (kvm_cpu_cap_has(X86_FEATURE_RDTSCP))
 			entry->ecx = F(RDPID);
 		++array->nent;
-		break;
 	default:
 		break;
 	}

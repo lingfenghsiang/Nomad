@@ -1239,6 +1239,14 @@ static int free_tail_pages_check(struct page *head_page, struct page *page)
 		 */
 		break;
 	default:
+#ifdef CONFIG_HTMM
+		/* from the third tail page ~  */
+		if (page - head_page < 132) {
+		    ClearPageHtmm(page);
+		    page->mapping = TAIL_MAPPING;
+		    break;
+		}
+#endif
 		if (page->mapping != TAIL_MAPPING) {
 			bad_page(page, "corrupted mapping in tail page");
 			goto out;
@@ -7407,6 +7415,11 @@ static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 
 	pgdat_page_ext_init(pgdat);
 	lruvec_init(&pgdat->__lruvec);
+#ifdef CONFIG_HTMM /* pgdat_init_internals() */
+	pgdat->memcg_htmm_file = NULL;
+	spin_lock_init(&pgdat->kmigraterd_lock);
+	INIT_LIST_HEAD(&pgdat->kmigraterd_head);
+#endif
 }
 
 static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx, int nid,

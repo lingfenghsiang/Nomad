@@ -141,6 +141,10 @@ enum pageflags {
 #ifdef CONFIG_KASAN_HW_TAGS
 	PG_skip_kasan_poison,
 #endif
+#ifdef CONFIG_HTMM
+	PG_htmm,
+	PG_needsplit,
+#endif
 	__NR_PAGEFLAGS,
 
 	/* Filesystems */
@@ -461,6 +465,13 @@ PAGEFLAG(Idle, idle, PF_ANY)
 PAGEFLAG(SkipKASanPoison, skip_kasan_poison, PF_HEAD)
 #else
 PAGEFLAG_FALSE(SkipKASanPoison)
+#endif
+
+#ifdef CONFIG_HTMM
+PAGEFLAG(Htmm, htmm, PF_ANY)
+
+PAGEFLAG(NeedSplit, needsplit, PF_HEAD)
+TESTCLEARFLAG(NeedSplit, needsplit, PF_HEAD)
 #endif
 
 /*

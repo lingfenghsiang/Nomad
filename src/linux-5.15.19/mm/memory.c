@@ -74,6 +74,10 @@
 #include <linux/ptrace.h>
 #include <linux/vmalloc.h>
 
+#ifdef CONFIG_HTMM
+#include <linux/htmm.h>
+#endif
+
 #include <trace/events/kmem.h>
 
 #include <asm/io.h>
@@ -1358,6 +1362,9 @@ again:
 				    likely(!(vma->vm_flags & VM_SEQ_READ)))
 					mark_page_accessed(page);
 			}
+#ifdef CONFIG_HTMM
+			uncharge_htmm_pte(pte, get_mem_cgroup_from_mm(vma->vm_mm));
+#endif
 			rss[mm_counter(page)]--;
 			page_remove_rmap(page, false);
 			if (unlikely(page_mapcount(page) < 0))
@@ -3802,13 +3809,26 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 		put_page(page);
 		return handle_userfault(vmf, VM_UFFD_MISSING);
 	}
-
+#ifdef CONFIG_HTMM
+	do {
+	    struct mem_cgroup *memcg = get_mem_cgroup_from_mm(vma->vm_mm);
+	    if (!memcg) {
+		ClearPageActive(page);
+	    }
+	} while (0);
+	if (page != NULL && node_is_toptier(page_to_nid(page)))
+	    count_vm_event(HTMM_ALLOC_DRAM);
+	else
+	    count_vm_event(HTMM_ALLOC_NVM);
+#endif
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 	page_add_new_anon_rmap(page, vma, vmf->address, false);
 	lru_cache_add_inactive_or_unevictable(page, vma);
 setpte:
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
-
+#ifdef CONFIG_HTMM
+	set_page_coolstatus(page, vmf->pte, vma->vm_mm);
+#endif
 	/* No need to invalidate - it was non-present before */
 	update_mmu_cache(vma, vmf->address, vmf->pte);
 unlock:

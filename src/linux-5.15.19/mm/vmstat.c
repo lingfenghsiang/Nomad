@@ -1361,6 +1361,16 @@ const char * const vmstat_text[] = {
 #ifdef CONFIG_BALLOON_COMPACTION
 	"balloon_migrate",
 #endif
+#ifdef CONFIG_HTMM
+	"htmm_nr_promoted",
+	"htmm_nr_demoted",
+	"htmm_nr_sampled",
+	"htmm_missed_dramread",
+	"htmm_missed_nvmread",
+	"htmm_missed_write",
+	"htmm_alloc_dram",
+	"htmm_alloc_nvm",
+#endif
 #endif /* CONFIG_MEMORY_BALLOON */
 #ifdef CONFIG_DEBUG_TLBFLUSH
 	"nr_tlb_remote_flush",

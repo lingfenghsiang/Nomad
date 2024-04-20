@@ -37,6 +37,10 @@
 #include <linux/compaction.h>
 #include <linux/rmap.h>
 
+#ifdef CONFIG_HTMM /* include header */
+#include <linux/memcontrol.h>
+#endif
+
 #include <asm/tlbflush.h>
 
 #include "internal.h"
@@ -1147,11 +1151,14 @@ int __ref online_pages(unsigned long pfn, unsigned long nr_pages,
 
 	kswapd_run(nid);
 	kcompactd_run(nid);
-
 	writeback_set_ratelimit();
 
 	memory_notify(MEM_ONLINE, &arg);
 	mem_hotplug_done();
+#ifdef CONFIG_HTMM /* online_pages() */
+	mem_cgroup_per_node_htmm_init();
+#endif
+
 	return 0;
 
 failed_addition:

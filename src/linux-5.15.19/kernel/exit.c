@@ -64,6 +64,9 @@
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
 #include <linux/io_uring.h>
+#ifdef CONFIG_HTMM
+#include <linux/htmm.h>
+#endif
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>

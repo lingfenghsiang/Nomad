@@ -190,7 +190,11 @@ static inline void page_dup_rmap(struct page *page, bool compound)
  */
 int page_referenced(struct page *, int is_locked,
 			struct mem_cgroup *memcg, unsigned long *vm_flags);
-
+#ifdef CONFIG_HTMM
+int cooling_page(struct page *page, struct mem_cgroup *memcg);
+int page_check_hotness(struct page *page, struct mem_cgroup *memcg);
+int get_pginfo_idx(struct page *page);
+#endif
 void try_to_migrate(struct page *page, enum ttu_flags flags);
 void try_to_unmap(struct page *, enum ttu_flags flags);
 
@@ -243,7 +247,8 @@ int page_mkclean(struct page *);
  */
 void page_mlock(struct page *page);
 
-void remove_migration_ptes(struct page *old, struct page *new, bool locked);
+void remove_migration_ptes(struct page *old, struct page *new, bool locked,
+			    bool unmap_clean);
 
 /*
  * Called by memory-failure.c to kill processes.
@@ -294,6 +299,22 @@ static inline int page_referenced(struct page *page, int is_locked,
 static inline void try_to_unmap(struct page *page, enum ttu_flags flags)
 {
 }
+
+#ifdef CONFIG_HTMM
+static inline int cooling_page(struct page *page, struct mem_cgroup *memcg)
+{
+    return false;
+}
+
+static inline int page_check_hotness(struct page *page, struct mem_cgroup *memcg)
+{
+    return false;
+}
+static int get_pginfo_idx(struct page *page)
+{
+    return -1;
+}
+#endif
 
 static inline int page_mkclean(struct page *page)
 {

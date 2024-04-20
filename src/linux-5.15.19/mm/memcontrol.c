@@ -67,6 +67,8 @@
 #include <net/ip.h>
 #include "slab.h"
 
+#include <linux/mempolicy.h>
+#include <linux/htmm.h>
 #include <linux/uaccess.h>
 
 #include <trace/events/vmscan.h>
@@ -1297,7 +1299,7 @@ void mem_cgroup_update_lru_size(struct lruvec *lruvec, enum lru_list lru,
 	if (WARN_ONCE(size < 0,
 		"%s(%p, %d, %d): lru_size %ld\n",
 		__func__, lruvec, lru, nr_pages, size)) {
-		VM_BUG_ON(1);
+		//VM_BUG_ON(1);
 		*lru_size = 0;
 	}
 
@@ -5125,6 +5127,18 @@ static int alloc_mem_cgroup_per_node_info(struct mem_cgroup *memcg, int node)
 	pn->usage_in_excess = 0;
 	pn->on_tree = false;
 	pn->memcg = memcg;
+#ifdef CONFIG_HTMM /* alloc_mem_cgroup_per_node_info() */
+	pn->max_nr_base_pages = ULONG_MAX;
+	INIT_LIST_HEAD(&pn->kmigraterd_list);
+	pn->need_cooling = false;
+	pn->need_adjusting = false;
+	pn->need_adjusting_all = false;
+	pn->need_demotion = false;
+	spin_lock_init(&pn->deferred_split_queue.split_queue_lock);
+	INIT_LIST_HEAD(&pn->deferred_split_queue.split_queue);
+	INIT_LIST_HEAD(&pn->deferred_list);
+	pn->deferred_split_queue.split_queue_len = 0;
+#endif
 
 	memcg->nodeinfo[node] = pn;
 	return 0;
@@ -5145,8 +5159,12 @@ static void __mem_cgroup_free(struct mem_cgroup *memcg)
 {
 	int node;
 
-	for_each_node(node)
+	for_each_node(node) {
+#ifdef CONFIG_HTMM
+		del_memcg_from_kmigraterd(memcg, node);
+#endif
 		free_mem_cgroup_per_node_info(memcg, node);
+	}
 	free_percpu(memcg->vmstats_percpu);
 	kfree(memcg);
 }
@@ -5214,6 +5232,43 @@ static struct mem_cgroup *mem_cgroup_alloc(void)
 	spin_lock_init(&memcg->deferred_split_queue.split_queue_lock);
 	INIT_LIST_HEAD(&memcg->deferred_split_queue.split_queue);
 	memcg->deferred_split_queue.split_queue_len = 0;
+#endif
+#ifdef CONFIG_HTMM /* mem_cgroup_alloc() */
+	memcg->htmm_enabled = false;
+	memcg->max_nr_dram_pages = ULONG_MAX;
+	memcg->nr_active_pages = 0;
+	memcg->nr_sampled = 0;
+	memcg->nr_dram_sampled = 0;
+	memcg->prev_dram_sampled = 0;
+	memcg->max_dram_sampled = 0;
+	memcg->prev_max_dram_sampled = 0;
+	memcg->nr_max_sampled = 0;
+	/* thresholds */
+	memcg->active_threshold = htmm_thres_hot;
+	memcg->warm_threshold = htmm_thres_hot;
+	memcg->bp_active_threshold = htmm_thres_hot;
+
+	/* split */
+	memcg->split_threshold = 21;
+	memcg->split_active_threshold = 16;
+	memcg->nr_split = 0;
+	memcg->nr_split_tail_idx = 0;
+	memcg->sum_util = 0;
+	memcg->num_util = 0;
+
+	for (i = 0; i < 21; i++)
+	    memcg->access_map[i] = 0;
+	for (i = 0; i < 16; i++) {
+	    memcg->hotness_hg[i] = 0;
+	    memcg->ebp_hotness_hg[i] = 0;
+	}
+
+	spin_lock_init(&memcg->access_lock);
+	memcg->cooled = false;
+	memcg->split_happen = false;
+	memcg->need_split = false;
+	memcg->cooling_clock = 0;
+	memcg->nr_alloc = 0;
 #endif
 	idr_replace(&mem_cgroup_idr, memcg, memcg->id.id);
 	return memcg;
@@ -6750,6 +6805,9 @@ int __mem_cgroup_charge(struct page *page, struct mm_struct *mm,
 
 	memcg = get_mem_cgroup_from_mm(mm);
 	ret = charge_memcg(page, memcg, gfp_mask);
+#ifdef CONFIG_HTMM
+	//charge_htmm_page(page, memcg);
+#endif
 	css_put(&memcg->css);
 
 	return ret;
@@ -6932,7 +6990,9 @@ void __mem_cgroup_uncharge(struct page *page)
 	/* Don't touch page->lru of any random page, pre-check: */
 	if (!page_memcg(page))
 		return;
-
+#ifdef CONFIG_HTMM
+	//uncharge_htmm_page(page, page_memcg(page));
+#endif
 	uncharge_gather_clear(&ug);
 	uncharge_page(page, &ug);
 	uncharge_batch(&ug);
@@ -7509,3 +7569,238 @@ static int __init mem_cgroup_swap_init(void)
 core_initcall(mem_cgroup_swap_init);
 
 #endif /* CONFIG_MEMCG_SWAP */
+
+#ifdef CONFIG_HTMM /* memcg interfaces for htmm */
+static int memcg_htmm_show(struct seq_file *m, void *v)
+{
+    struct mem_cgroup *memcg = mem_cgroup_from_css(seq_css(m));
+
+    if (memcg->htmm_enabled)
+	seq_printf(m, "[enabled] disabled\n");
+    else
+	seq_printf(m, "enabled [disabled]\n");
+
+    return 0;
+}
+
+static ssize_t memcg_htmm_write(struct kernfs_open_file *of,
+	char *buf, size_t nbytes, loff_t off)
+{
+    struct mem_cgroup *memcg = mem_cgroup_from_css(of_css(of));
+    int nid;
+
+    if (sysfs_streq(buf, "enabled"))
+	memcg->htmm_enabled = true;
+    else if (sysfs_streq(buf, "disabled"))
+	memcg->htmm_enabled = false;
+    else
+	return -EINVAL;
+
+    if (memcg->htmm_enabled) {
+	kmigraterd_init();
+    } else {
+	kmigraterd_stop();
+    }
+    for_each_node_state(nid, N_MEMORY) {
+	struct pglist_data *pgdat = NODE_DATA(nid);
+	
+	if (memcg->htmm_enabled) {
+	    WRITE_ONCE(pgdat->kswapd_failures, MAX_RECLAIM_RETRIES);
+	    add_memcg_to_kmigraterd(memcg, nid);
+	} else {
+	    WRITE_ONCE(pgdat->kswapd_failures, 0);
+	    del_memcg_from_kmigraterd(memcg, nid);
+	}
+    }
+
+    return nbytes;
+}
+
+static struct cftype memcg_htmm_file[] = {
+    {
+	.name = "htmm_enabled",
+	.flags = CFTYPE_NOT_ON_ROOT,
+	.seq_show = memcg_htmm_show,
+	.write = memcg_htmm_write,
+    },
+    {}, /* terminate */
+};
+
+static int __init mem_cgroup_htmm_init(void)
+{
+    WARN_ON(cgroup_add_dfl_cftypes(&memory_cgrp_subsys,
+		memcg_htmm_file));
+    return 0;
+}
+subsys_initcall(mem_cgroup_htmm_init);
+
+static int memcg_access_map_show(struct seq_file *m, void *v)
+{
+    struct mem_cgroup *memcg = mem_cgroup_from_css(seq_css(m));
+    struct seq_buf s;
+    int i;
+
+    seq_buf_init(&s, kmalloc(PAGE_SIZE, GFP_KERNEL), PAGE_SIZE);
+    if (!s.buffer)
+	return 0;
+    for (i = 20; i > 15; i--) {
+	seq_buf_printf(&s, "skewness_idx_map[%2d]: %10lu\n", i, memcg->access_map[i]);
+    }
+
+    for (i = 15; i >= 0; i--) {
+	seq_buf_printf(&s, "skewness_idx_map[%2d]: %10lu  hotness_hg[%2d]: %10lu  ebp_hotness_hg[%2d]: %10lu\n",
+		i, memcg->access_map[i], i, memcg->hotness_hg[i], i, memcg->ebp_hotness_hg[i]);
+
+
+    }
+
+    seq_puts(m, s.buffer);
+    kfree(s.buffer);
+
+    return 0;
+}
+
+static struct cftype memcg_access_map_file[] = {
+    {
+	.name = "access_map",
+	.flags = CFTYPE_NOT_ON_ROOT,
+	.seq_show = memcg_access_map_show,
+    },
+    {},
+};
+
+static int __init mem_cgroup_access_map_init(void)
+{
+    WARN_ON(cgroup_add_dfl_cftypes(&memory_cgrp_subsys,
+		memcg_access_map_file));
+    return 0;
+}
+subsys_initcall(mem_cgroup_access_map_init);
+
+static int memcg_hotness_stat_show(struct seq_file *m, void *v)
+{
+    struct mem_cgroup *memcg = mem_cgroup_from_css(seq_css(m));
+    struct seq_buf s;
+    unsigned long hot = 0, warm = 0, cold = 0;
+    int i;
+
+    seq_buf_init(&s, kmalloc(PAGE_SIZE, GFP_KERNEL), PAGE_SIZE);
+    if (!s.buffer)
+	return 0;
+
+    for (i = 15; i >= 0; i--) {
+	if (i >= memcg->active_threshold)
+	    hot += memcg->hotness_hg[i];
+	else if (i >= memcg->warm_threshold)
+	    warm += memcg->hotness_hg[i];
+	else
+	    cold += memcg->hotness_hg[i];
+    }
+
+    seq_buf_printf(&s, "hot %lu warm %lu cold %lu\n", hot, warm, cold);
+
+    seq_puts(m, s.buffer);
+    kfree(s.buffer);
+    
+    return 0;
+}
+
+static struct cftype memcg_hotness_stat_file[] = {
+    {
+	.name = "hotness_stat",
+	.flags = CFTYPE_NOT_ON_ROOT,
+	.seq_show = memcg_hotness_stat_show,
+    },
+    {},
+};
+
+static int __init mem_cgroup_hotness_stat_init(void)
+{
+    WARN_ON(cgroup_add_dfl_cftypes(&memory_cgrp_subsys,
+		memcg_hotness_stat_file));
+    return 0;
+}
+subsys_initcall(mem_cgroup_hotness_stat_init);
+
+static int memcg_per_node_max_show(struct seq_file *m, void *v)
+{
+    struct mem_cgroup *memcg = mem_cgroup_from_css(seq_css(m));
+    struct cftype *cur_file = seq_cft(m);
+    int nid = cur_file->numa_node_id;
+    unsigned long max = READ_ONCE(memcg->nodeinfo[nid]->max_nr_base_pages);
+
+    if (max == ULONG_MAX)
+	seq_puts(m, "max\n");
+    else
+	seq_printf(m, "%llu\n", (u64)max * PAGE_SIZE);
+
+    return 0;
+}
+
+static ssize_t memcg_per_node_max_write(struct kernfs_open_file *of,
+	char *buf, size_t nbytes, loff_t off)
+{
+    struct mem_cgroup *memcg = mem_cgroup_from_css(of_css(of));
+    struct cftype *cur_file = of_cft(of);
+    int nid = cur_file->numa_node_id;
+    unsigned long max, nr_dram_pages = 0;
+    int err, n;
+
+    buf = strstrip(buf);
+    err = page_counter_memparse(buf, "max", &max);
+    if (err)
+	return err;
+
+    xchg(&memcg->nodeinfo[nid]->max_nr_base_pages, max);
+    
+    for_each_node_state(n, N_MEMORY) {
+	if (node_is_toptier(n)) {
+	    if (memcg->nodeinfo[n]->max_nr_base_pages != ULONG_MAX)
+		nr_dram_pages += memcg->nodeinfo[n]->max_nr_base_pages;
+	}
+    }
+    if (nr_dram_pages)
+	memcg->max_nr_dram_pages = nr_dram_pages;
+
+    return nbytes;
+}
+
+static int pgdat_memcg_htmm_init(struct pglist_data *pgdat)
+{
+    pgdat->memcg_htmm_file = kzalloc(sizeof(struct cftype) * 2, GFP_KERNEL);
+    if (!pgdat->memcg_htmm_file) {
+	printk("error: fails to allocate pgdat->memcg_htmm_file\n");
+	return -ENOMEM;
+    }
+#ifdef CONFIG_LOCKDEP
+    lockdep_register_key(&(pgdat->memcg_htmm_file->lockdep_key));
+#endif
+    return 0;
+}
+
+int mem_cgroup_per_node_htmm_init(void)
+{
+    int nid;
+
+    for_each_node_state(nid, N_MEMORY) {
+	struct pglist_data *pgdat = NODE_DATA(nid);
+
+	if (!pgdat || pgdat->memcg_htmm_file)
+	    continue;
+	if (pgdat_memcg_htmm_init(pgdat))
+	    continue;
+
+	snprintf(pgdat->memcg_htmm_file[0].name, MAX_CFTYPE_NAME,
+		"max_at_node%d", nid);
+	pgdat->memcg_htmm_file[0].flags = CFTYPE_NOT_ON_ROOT;
+	pgdat->memcg_htmm_file[0].seq_show = memcg_per_node_max_show;
+	pgdat->memcg_htmm_file[0].write = memcg_per_node_max_write;
+	pgdat->memcg_htmm_file[0].numa_node_id = nid;
+
+	WARN_ON(cgroup_add_dfl_cftypes(&memory_cgrp_subsys,
+		    pgdat->memcg_htmm_file));
+    }
+    return 0;
+}
+subsys_initcall(mem_cgroup_per_node_htmm_init);
+#endif /* CONFIG_HTMM */

@@ -97,6 +97,7 @@
 #include <linux/scs.h>
 #include <linux/io_uring.h>
 #include <linux/bpf.h>
+#include <linux/htmm.h>
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
@@ -1062,6 +1063,9 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 #if defined(CONFIG_TRANSPARENT_HUGEPAGE) && !USE_SPLIT_PMD_PTLOCKS
 	mm->pmd_huge_pte = NULL;
 #endif
+#ifdef CONFIG_HTMM
+	htmm_mm_init(mm);
+#endif
 	mm_init_uprobes_state(mm);
 	hugetlb_count_init(mm);
 
@@ -1085,6 +1089,9 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 fail_nocontext:
 	mm_free_pgd(mm);
 fail_nopgd:
+#ifdef CONFIG_HTMM
+	htmm_mm_exit(mm);
+#endif
 	free_mm(mm);
 	return NULL;
 }
@@ -1111,6 +1118,9 @@ static inline void __mmput(struct mm_struct *mm)
 	uprobe_clear_state(mm);
 	exit_aio(mm);
 	ksm_exit(mm);
+#ifdef CONFIG_HTMM
+	htmm_mm_exit(mm);
+#endif
 	khugepaged_exit(mm); /* must run before exit_mmap */
 	exit_mmap(mm);
 	mm_put_huge_zero_page(mm);

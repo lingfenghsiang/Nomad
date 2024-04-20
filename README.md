@@ -53,7 +53,7 @@ $ standard-readme-spec
 
 ```
 git clone https://github.com/lingfenghsiang/Nomad.git
-docker run -v ./Nomad:/root/code -it --rm docklf/ubuntu20-kerncomp:v0.1
+docker run -v ./Nomad:/root/code -it --rm docklf/ubuntu20-kerncomp:aec-v0.2
 ```
 In the docker container, please execute:
 ```

@@ -155,10 +155,6 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
 
-list(APPEND CMAKE_PREFIX_PATH 
-"/home/lingfeng/opt/third_party_inst/usr/local"
-)
-
 find_package (gflags REQUIRED)
 
 add_subdirectory(third_party)

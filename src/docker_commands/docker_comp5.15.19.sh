@@ -1,0 +1,1 @@
+cd /root/code/src/linux-5.15.19 && make bindeb-pkg -j`nproc`

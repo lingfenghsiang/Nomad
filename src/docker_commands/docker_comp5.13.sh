@@ -1,0 +1,1 @@
+cd /root/code/src/linux-5.13-rc6 && make bindeb-pkg -j`nproc`

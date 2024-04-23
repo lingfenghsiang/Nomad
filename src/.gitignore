@@ -1,0 +1,4 @@
+tmp
+*.deb
+*.buildinfo
+*.changes

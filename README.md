@@ -1,24 +1,12 @@
 # Nomad
 
 Implementation of paper:
+
 Lingfeng Xiang, Zhen Lin, Weishu Deng, Hui Lu, Jia Rao, Yifan Yuan, Ren Wang. "Nomad: Non-Exclusive Memory Tiering via Transactional Page Migration", OSDI 2024
 
+This repository contains the code for TPP, Nomad, Memtis and testing programs. It's recommended to compile our code using docker, we've already set up the compiling enviroment inside. You had better compile the code with the machine 
 
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-
-A standard style for README files
-
-Your README file is normally the first entry point to your code. It should tell people why they should use your module, how they can install it, and how they can use it. Standardizing how you write your README makes creating and maintaining your READMEs easier. Great documentation takes work!
-
-This repository contains:
-
-1. [The specification](spec.md) for how a standard README should look.
-2. A link to [a linter](https://github.com/RichardLitt/standard-readme-preset) you can use to keep your README maintained ([work in progress](https://github.com/RichardLitt/standard-readme/issues/5)).
-3. A link to [a generator](https://github.com/RichardLitt/generator-standard-readme) you can use to create standard READMEs.
-4. [A badge](#badge) to point to this spec.
-5. [Examples of standard READMEs](example-readmes/) - such as this file you are reading.
-
-Standard Readme is designed for open source libraries. Although it’s [historically](#background) made for Node and npm projects, it also applies to libraries in other languages and package managers.
+If you want to setup the environment yourself. Please see [here](#setting-up-the-environment-by-yourself).
 
 
 ## Table of Contents
@@ -26,14 +14,38 @@ Standard Readme is designed for open source libraries. Although it’s [historic
 - [Nomad](#nomad)
 	- [Table of Contents](#table-of-contents)
 	- [Prerequisites](#prerequisites)
+		- [Compile using docker (Recommended)](#compile-using-docker-recommended)
+		- [Setting up the environment by yourself.](#setting-up-the-environment-by-yourself)
+		- [Optional](#optional)
 	- [Usage](#usage)
+		- [Download the code](#download-the-code)
 		- [Compiling the code](#compiling-the-code)
 	- [Matching paper results](#matching-paper-results)
 	- [License](#license)
 
 ## Prerequisites
 
-If you want to run Nomad in a virtual machine, you may need network access to the virtual machine.
+### Compile using docker (Recommended)
+
+We offer Docker environments for compiling both the kernel and userspace programs. The compilation process is static, meaning you only need to compile once on a single machine, and then you can transfer the compiled program to the server.
+
+Install docker:
+```
+curl https://get.docker.com/ | bash
+```
+
+After this step, you may jump to section [Compiling](#compiling-the-code).
+
+### Setting up the environment by yourself.
+
+You need to execute the following command to compile kernel. We compiled our code on Ubuntu 20.04LTS. If you compile on Ubuntu 22.04, you may encouter tool chain problems.
+```
+apt-get install git fakeroot build-essential ncurses-dev xz-utils libssl-dev bc flex libelf-dev bison dwarves zstd
+```
+You also need to install `cmake`, `gflags`, `glog` and `python` to compile our userspace program and generate the access pattern file.
+
+### Optional
+If you want to try Nomad or TPP in a virtual machine, you may need network access to the virtual machine.
 ```
 sudo apt-get install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
 sudo adduser `id -un` libvirt
@@ -42,38 +54,38 @@ sudo adduser `id -un` kvm
 
 ## Usage
 
-This is only a documentation package. You can print out [spec.md](spec.md) to your console:
+This section focuses on how to compile our code, install the packed kernel, and how to run our code.
 
-```sh
-$ standard-readme-spec
-# Prints out the standard-readme spec
+
+### Download the code
+```
+git clone https://github.com/lingfenghsiang/Nomad.git
+cd Nomad
 ```
 
 ### Compiling the code
 
+To compile our code, you need to execute:
+
 ```
-git clone https://github.com/lingfenghsiang/Nomad.git
-docker run -v ./Nomad:/root/code -it --rm docklf/ubuntu20-kerncomp:aec-v0.2
+sudo bash compile.sh
 ```
-In the docker container, please execute:
+
+After this step, you will get following compiled files and we need to run them on your platforms:
+
 ```
-cd /root/code
-patch -p1 < src/implementation_patches/nomad.patch
-make menuconfig
-make deb-pkg -j`nproc`
+src/tmp/linux-headers-5.13.0-rc6nomad_5.13.0-rc6nomad-nomad_amd64.deb
+
+src/tmp/linux-image-5.13.0-rc6nomad_5.13.0-rc6nomad-nomad_amd64.deb
+src/tmp/linux-image-5.13.0-rc6tpp_5.13.0-rc6tpp-tpp_amd64.deb
+src/tmp/linux-image-5.15.19-htmm_5.15.19-htmm-memtis_amd64.deb
+
+src/tmp/build/tpp/tpp_mem_access
 ```
 
 ## Matching paper results
 
-If your README is compliant with Standard-Readme and you're on GitHub, it would be great if you could add the badge. This allows people to link back to this Spec, and helps adoption of the README. The badge is **not required**.
 
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-
-To add in Markdown format, use this code:
-
-```
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-```
 
 ## License
 

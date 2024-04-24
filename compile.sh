@@ -87,4 +87,8 @@ fi
 done
 
 echo compiling userspace program...
-docker run -v .:/root/code --rm docklf/ubuntu20-kerncomp:aec-v0.2 bash /root/code/src/docker_commands/compile_userspace_program.sh
+
+docker run -v .:/root/code --rm docklf/compile_environment:glogflagtest bash /root/code/src/docker_commands/compile_userspace_program.sh
+
+echo generate microbenchmark access pattern file...
+docker run -v .:/root/code --rm docklf/ubuntu20-kerncomp:aec-v0.2 bash /root/code/src/testing_scripts/microbenchmark/generate_ycsb.sh

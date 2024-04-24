@@ -99,16 +99,41 @@ To compile our code, you need to execute:
 sudo bash compile.sh
 ```
 
-After this step, you will get following compiled files and we need to run them on your platforms:
+Estimated compile time on a 96 core E5-4640 server: 1hour
+
+After this step, you will get following compiled files under directory `src/tmp/output/` and you may directly send the folder `src/tmp/output/` to your testing platform:
 
 ```
-src/tmp/linux-headers-5.13.0-rc6nomad_5.13.0-rc6nomad-nomad_amd64.deb
-
-src/tmp/linux-image-5.13.0-rc6nomad_5.13.0-rc6nomad-nomad_amd64.deb
-src/tmp/linux-image-5.13.0-rc6tpp_5.13.0-rc6tpp-tpp_amd64.deb
-src/tmp/linux-image-5.15.19-htmm_5.15.19-htmm-memtis_amd64.deb
-
-src/tmp/build/tpp/tpp_mem_access
+# ls src/tmp/output/
+linux-headers-5.13.0-rc6nomad_5.13.0-rc6nomad-nomad_amd64.deb
+linux-headers-5.13.0-rc6tpp_5.13.0-rc6tpp-tpp_amd64.deb
+linux-headers-5.15.19-htmm_5.15.19-htmm-memtis_amd64.deb
+linux-image-5.13.0-rc6nomad_5.13.0-rc6nomad-nomad_amd64.deb
+linux-image-5.13.0-rc6nomad-dbg_5.13.0-rc6nomad-nomad_amd64.deb
+linux-image-5.13.0-rc6tpp_5.13.0-rc6tpp-tpp_amd64.deb
+linux-image-5.13.0-rc6tpp-dbg_5.13.0-rc6tpp-tpp_amd64.deb
+linux-image-5.15.19-htmm_5.15.19-htmm-memtis_amd64.deb
+linux-image-5.15.19-htmm-dbg_5.15.19-htmm-memtis_amd64.deb
+linux-libc-dev_5.13.0-rc6nomad-nomad_amd64.deb
+linux-libc-dev_5.13.0-rc6tpp-tpp_amd64.deb
+linux-libc-dev_5.15.19-htmm-memtis_amd64.deb
+run_zipfan_first_touch_10G.bin
+run_zipfan_first_touch_13.5G.bin
+run_zipfan_first_touch_18G.bin
+run_zipfan_first_touch_27G.bin
+run_zipfan_hottest_10G.bin
+run_zipfan_hottest_13.5G.bin
+run_zipfan_hottest_18G.bin
+run_zipfan_hottest_27G.bin
+tpp_mem_access
+warmup_zipfan_first_touch_10G.bin
+warmup_zipfan_first_touch_13.5G.bin
+warmup_zipfan_first_touch_18G.bin
+warmup_zipfan_first_touch_27G.bin
+warmup_zipfan_hottest_10G.bin
+warmup_zipfan_hottest_13.5G.bin
+warmup_zipfan_hottest_18G.bin
+warmup_zipfan_hottest_27G.bin
 ```
 
 ## Matching paper results

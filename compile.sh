@@ -85,3 +85,6 @@ mv $i $newname
 fi
 
 done
+
+echo compiling userspace program...
+docker run -v .:/root/code --rm docklf/ubuntu20-kerncomp:aec-v0.2 bash /root/code/src/docker_commands/compile_userspace_program.sh

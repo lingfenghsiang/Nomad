@@ -4,7 +4,7 @@ Implementation of paper:
 
 Lingfeng Xiang, Zhen Lin, Weishu Deng, Hui Lu, Jia Rao, Yifan Yuan, Ren Wang. "Nomad: Non-Exclusive Memory Tiering via Transactional Page Migration", OSDI 2024
 
-This repository contains the code for TPP, Nomad, Memtis and testing programs. It's recommended to compile our code using docker, we've already set up the compiling enviroment inside. You had better compile the code with the machine 
+This repository hosts the code for TPP, Nomad, Memtis, and various testing programs. We recommend compiling our code using Docker, as we have already configured the compilation environment within. You can compile the code on a server with the highest number of CPU cores to expedite the compilation process.
 
 If you want to setup the environment yourself. Please see [here](#setting-up-the-environment-by-yourself).
 
@@ -14,6 +14,9 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 - [Nomad](#nomad)
 	- [Table of Contents](#table-of-contents)
 	- [Prerequisites](#prerequisites)
+		- [Hardware requirements](#hardware-requirements)
+		- [Setting up Optane Persistent Memory](#setting-up-optane-persistent-memory)
+		- [Setting up CXL memory](#setting-up-cxl-memory)
 		- [Compile using docker (Recommended)](#compile-using-docker-recommended)
 		- [Setting up the environment by yourself.](#setting-up-the-environment-by-yourself)
 		- [Optional](#optional)
@@ -24,6 +27,31 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 	- [License](#license)
 
 ## Prerequisites
+
+### Hardware requirements
+
+At present, our system requires one CPU with a memory NUMA node and one CPU-less NUMA memory node. We do not support multiple CPU NUMA nodes. If your system has more than one CPU NUMA node, you can disable the others and leave only one CPU node enabled in the BIOS settings. As for the memory NUMA node, you can use Persistent Memory, CXL Memory, or virtualize such configurations to run our code in virtual machines.
+
+A typical hardware configuration appears as below:
+```
+# numactl -H
+available: 2 nodes (0-1)
+node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+node 0 size: 15264 MB
+node 0 free: 12065 MB
+node 1 cpus:
+node 1 size: 16127 MB
+node 1 free: 15924 MB
+node distances:
+node   0   1
+  0:  10  14
+  1:  14  10
+```
+
+### Setting up Optane Persistent Memory
+
+### Setting up CXL memory
+
 
 ### Compile using docker (Recommended)
 

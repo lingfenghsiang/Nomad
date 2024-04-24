@@ -3,8 +3,8 @@ root_dir=$PWD
 mkdir -p ${root_dir}/src/tmp/
 rm -rf ${root_dir}/src/tmp/*
 
-cp ${root_dir}/src/kernel_config/5.13.config src/linux-5.13-rc6/
-cp ${root_dir}/src/kernel_config/5.15.config src/linux-5.15.19/
+rm src/linux-5.15.19/.config
+cp ${root_dir}/src/kernel_config/5.15.config src/linux-5.15.19/.config
 
 ulimit -n 2048
 # compile memtis
@@ -16,7 +16,7 @@ git restore src/linux-5.15.19/
 
 rm -f src/linux-*_amd64.*
 echo start compiling...
-docker run -v .:/root/code -it --rm docklf/ubuntu20-kerncomp:aec-v0.2 bash /root/code/src/docker_commands/docker_comp5.15.19.sh
+docker run -v .:/root/code --rm docklf/ubuntu20-kerncomp:aec-v0.2 bash /root/code/src/docker_commands/docker_comp5.15.19.sh
 
 cp ${root_dir}/src/*.deb ${root_dir}/src/tmp/
 
@@ -30,7 +30,8 @@ fi
 
 done
 
-
+rm src/linux-5.13-rc6/.config
+cp ${root_dir}/src/kernel_config/tpp.config src/linux-5.13-rc6/.config
 # compile tpp
 echo compiling tpp...
 echo deleting patched code...
@@ -57,6 +58,8 @@ fi
 
 done
 
+rm src/linux-5.13-rc6/.config
+cp ${root_dir}/src/kernel_config/nomad.config src/linux-5.13-rc6/.config
 # compile nomad
 echo compiling nomad...
 echo deleting patched code...

@@ -8,8 +8,8 @@ name = ["hottest", "first_touch"]
 
 for i in wss:
     for j, k in zip(pattern, name):
-        cmd = "offset=`${ycsb_dir}/bin/ycsb.sh run basic -P ./workloada-" + i + "  | python3 filter_access_pattern.py | python3 write_binary_data.py -p " + j + " -f ${output_dir}/warmup_zipfan_" + k + "_" + i + ".bin`"
+        cmd = "offset=`${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-" + i + "  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p " + j + " -f ${output_dir}/warmup_zipfan_" + k + "_" + i + ".bin`"
         print(cmd)
-        cmd = "${ycsb_dir}/bin/ycsb.sh run basic -P ./workloada-" + i + "  | python3 filter_access_pattern.py | python3 write_binary_data.py -p " + j + " -o $offset -f ${output_dir}/run_zipfan_" + k + "_" + i + ".bin"
+        cmd = "${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-" + i + "  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p " + j + " -o $offset -f ${output_dir}/run_zipfan_" + k + "_" + i + ".bin"
         print(cmd)
         print()

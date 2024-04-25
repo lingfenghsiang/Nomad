@@ -14,6 +14,7 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 - [Nomad](#nomad)
 	- [Table of Contents](#table-of-contents)
 	- [Prerequisites](#prerequisites)
+		- [Software requirements](#software-requirements)
 		- [Hardware requirements](#hardware-requirements)
 		- [Setting up Optane Persistent Memory](#setting-up-optane-persistent-memory)
 		- [Setting up CXL memory](#setting-up-cxl-memory)
@@ -28,8 +29,21 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 
 ## Prerequisites
 
+### Software requirements
+
+On persistent memory server you need to install 
+
+```
+sudo apt install -y ndctl ipmctl
+```
+
 ### Hardware requirements
 
+**Compiling code**
+You'll need a minimum of 30GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as are available for compilation, as it can be time-consuming.
+
+
+**Running code**
 At present, our system requires one CPU with a memory NUMA node and one CPU-less NUMA memory node. We do not support multiple CPU NUMA nodes. If your system has more than one CPU NUMA node, you can disable the others and leave only one CPU node enabled in the BIOS settings. As for the memory NUMA node, you can use Persistent Memory, CXL Memory, or virtualize such configurations to run our code in virtual machines.
 
 A typical hardware configuration appears as below:
@@ -50,7 +64,41 @@ node   0   1
 
 ### Setting up Optane Persistent Memory
 
+Reconfigure persistent memory hardware.
+```
+# destroy namespaces on persistent memory
+sudo ndctl destroy-namespace -f all
+# reconfigure persistent memory
+sudo ipmctl create  -goal
+# restart machine to make new configuration available
+sudo reboot
+```
+Set up Persistent Memory namespace as root user.
+```
+su
+ndctl create-namespace --mode=devdax --map=mem
+daxctl migrate-device-model
+set +o noclobber
+echo offline > /sys/devices/system/memory/auto_online_blocks
+```
+Set Persistent Memory as volatile system memory.
+```
+daxctl reconfigure-device --mode=system-ram all
+```
+
 ### Setting up CXL memory
+
+Add the following kernel parameter to utilize CXL.mem device in file `/etc/default/grub`.
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="efi=nosoftreserve"
+```
+Then update the grub by executing:
+```
+sudo update-grub2
+```
+
+Then reboot your machine.
 
 
 ### Compile using docker (Recommended)

@@ -1,0 +1,17 @@
+.Module.symvers.cmd
+.async_promote.ko.cmd
+.async_promote.mod.cmd
+.async_promote.mod.o.cmd
+.async_promote.o.cmd
+.async_promote_main.o.cmd
+.buffer_ring.o.cmd
+.modules.order.cmd
+Module.symvers
+async_promote.ko
+async_promote.mod
+async_promote.mod.c
+async_promote.mod.o
+async_promote.o
+async_promote_main.o
+buffer_ring.o
+modules.order

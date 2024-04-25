@@ -19,7 +19,7 @@
 #include <linux/slab.h>
 #include <linux/pid.h>
 
-#include "../linux-5.13-rc6/mm/internal.h/internal.h"
+#include "../linux-5.13-rc6/mm/internal.h"
 #include "buffer_ring.h"
 
 #define MAX_TASK 1024

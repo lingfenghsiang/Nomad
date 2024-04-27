@@ -1,0 +1,100 @@
+diff --git a/train.c b/train.c
+index 6adf5c6..d8244b2 100644
+--- a/train.c
++++ b/train.c
+@@ -6,9 +6,14 @@
+ #include <errno.h>
+ #include "linear.h"
+ #include <omp.h>
++#include <signal.h>
++#include <time.h>
++#include <iostream>
++#include <sys/syscall.h>
+ #define Malloc(type,n) (type *)malloc((n)*sizeof(type))
++#define Memset(prt,type,n)memset(ptr,0,(n)*sizeof(type))
+ #define INF HUGE_VAL
+-
++static int flag = 0;
+ void print_null(const char *s) {}
+ 
+ void exit_with_help()
+@@ -106,15 +111,20 @@ int flag_p_specified;
+ int flag_solver_specified;
+ int nr_fold;
+ double bias;
+-
++void handler(int sig) 
++{
++     flag ++;
++}
+ int main(int argc, char **argv)
+ {
+ 	char input_file_name[1024];
+ 	char model_file_name[1024];
+ 	const char *error_msg;
+-
++	signal(SIGUSR1, handler); 
+ 	parse_command_line(argc, argv, input_file_name, model_file_name);
++	// prepare memory 
+ 	read_problem(input_file_name);
++	 
+ 	error_msg = check_parameter(&prob,&param);
+ 
+ 	if(error_msg)
+@@ -122,17 +132,29 @@ int main(int argc, char **argv)
+ 		fprintf(stderr,"ERROR: %s\n",error_msg);
+ 		exit(1);
+ 	}
+-
++	clock_t begin;
+ 	if (flag_find_parameters)
+-	{
++	{	
++		 
+ 		do_find_parameters();
+ 	}
+ 	else if(flag_cross_validation)
+-	{
++	{	
++		 
+ 		do_cross_validation();
+ 	}
+ 	else
+ 	{
++		 
++		while(1) {
++			 
++		 
++			 
++			 
++			break;
++			
++		}
++		clock_t begin = clock();
+ 		model_=train(&prob, &param);
+ 		if(save_model(model_file_name, model_))
+ 		{
+@@ -146,7 +168,11 @@ int main(int argc, char **argv)
+ 	free(prob.x);
+ 	free(x_space);
+ 	free(line);
+-
++	clock_t end = clock();
++	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
++	printf("==================================");
++ 
++	printf("execution time %f (s)",time_spent);
+ 	return 0;
+ }
+ 
+@@ -471,7 +497,9 @@ void read_problem(const char *filename)
+ 	prob.y = Malloc(double,prob.l);
+ 	prob.x = Malloc(struct feature_node *,prob.l);
+ 	x_space = Malloc(struct feature_node,elements+prob.l);
+-
++	// Memset(prob.y,double,prob.l);
++	// Memset(prob.x,struct feature_node *,prob.l);
++	// Memset(x_space,struct feature_node,elements+prob.l);
+ 	max_index = 0;
+ 	j=0;
+ 	for(i=0;i<prob.l;i++)

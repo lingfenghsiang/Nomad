@@ -24,18 +24,23 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 	- [Usage](#usage)
 		- [Download the code](#download-the-code)
 		- [Compiling the code](#compiling-the-code)
-	- [Matching paper results](#matching-paper-results)
+	- [Reproducing paper results](#reproducing-paper-results)
+		- [Matching paper results](#matching-paper-results)
 	- [License](#license)
 
 ## Prerequisites
 
 ### Software requirements
 
+To compile our Nomad module, you also need to install `gcc`, `make`, `pkg-config` on the running server.
+
+
 On persistent memory server you need to install 
 
 ```
 sudo apt install -y ndctl ipmctl
 ```
+
 
 ### Hardware requirements
 
@@ -184,9 +189,17 @@ warmup_zipfan_hottest_18G.bin
 warmup_zipfan_hottest_27G.bin
 ```
 
-## Matching paper results
+## Reproducing paper results
 
+1. Compile the code
+1. Send compiled binary package to the running server
+2. Setting up the machine
+   * aa
+   * sudo bash src/testing_scripts/setup_system/setup_pmem.sh
+   * bash src/testing_scripts/setup_system/memtis_prepare.sh
+3. a
 
+### Matching paper results
 
 ## License
 

@@ -25,6 +25,7 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 		- [Download the code](#download-the-code)
 		- [Compiling the code](#compiling-the-code)
 	- [Reproducing paper results](#reproducing-paper-results)
+		- [Steps to take:](#steps-to-take)
 		- [Matching paper results](#matching-paper-results)
 	- [License](#license)
 
@@ -191,13 +192,37 @@ warmup_zipfan_hottest_27G.bin
 
 ## Reproducing paper results
 
-1. Compile the code
-1. Send compiled binary package to the running server
-2. Setting up the machine
-   * aa
-   * sudo bash src/testing_scripts/setup_system/setup_pmem.sh
+### Steps to take:
+1. Compile the code on a machine that has a lot of cores (Do this only once).
+2. Install kernels (Do this on each machine you need to run on).
+3. Send compiled binary package to the running server
+4. Compile the applications
+   ```
+   bash third_party/prepare.sh
+   ```
+5. Setting up the machine
+   * If it's a pmem server:
+		```
+		sudo bash src/testing_scripts/setup_system/setup_pmem.sh
+		```
+   * If it's a CXL server:
+		```
+		sudo bash src/testing_scripts/setup_system/setup_cxl.sh
+		```
    * bash src/testing_scripts/setup_system/memtis_prepare.sh
-3. a
+6. Setting up the OS:
+   * If it's TPP:
+		```
+		sudo bash src/testing_scripts/setup_system/tpp_start_tiering.sh
+		```
+	* If it's Nomad:
+		```
+		sudo bash src/testing_scripts/setup_system/nomad_start_tiering.sh
+		```
+	* If it's Memtis:
+		```
+		sudo bash src/testing_scripts/setup_system/memtis_prepare.sh
+		```
 
 ### Matching paper results
 

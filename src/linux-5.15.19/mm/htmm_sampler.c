@@ -123,8 +123,6 @@ static int pebs_init(pid_t pid, int node)
 static void pebs_disable(void)
 {
 	int cpu, event;
-	if (!mem_event)
-		return;
 	printk("pebs disable\n");
 	for (cpu = 0; cpu < CPUS_PER_SOCKET; cpu++) {
 		for (event = 0; event < N_HTMMEVENTS; event++) {

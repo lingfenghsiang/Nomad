@@ -29,3 +29,6 @@ ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-27G  | python3 ${sc
 
 offset=`${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-27G  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 1 -f ${output_dir}/warmup_zipfan_first_touch_27G.bin`
 ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-27G  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 1 -o $offset -f ${output_dir}/run_zipfan_first_touch_27G.bin
+
+python3 ${script_dir}/create_thrashing.py -f ${output_dir}/thrashing-15G.bin -s 15
+python3 ${script_dir}/create_thrashing.py -f ${output_dir}/thrashing-10G.bin -s 10

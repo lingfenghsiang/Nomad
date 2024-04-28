@@ -33,7 +33,7 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 
 ### Software requirements
 
-To compile our Nomad module, you also need to install `gcc`, `make`, `pkg-config` on the running server.
+To compile our Nomad module, you also need to install `gcc`, `make`, `pkg-config`, `time`, `python2`, `openjdk-8-jre` on the running server.
 
 
 On persistent memory server you need to install 
@@ -218,12 +218,14 @@ warmup_zipfan_hottest_27G.bin
 	* If it's Nomad:
 		```
 		sudo bash src/testing_scripts/setup_system/nomad_start_tiering.sh
+		sudo bash src/testing_scripts/pageranking/run-nomad.sh
+		sudo bash src/testing_scripts/liblinear/run-nomad.sh
 		```
 	* If it's Memtis:
 		```
 		sudo bash src/testing_scripts/setup_system/memtis_prepare.sh
 		```
-
+sudo ln -s /usr/bin/python3 /usr/bin/python
 ### Matching paper results
 
 ## License

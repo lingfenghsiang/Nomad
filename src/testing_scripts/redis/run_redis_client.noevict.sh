@@ -23,4 +23,4 @@ echo end >> ${output_dir}/redis.noevict.log
 cat /proc/vmstat  >> ${output_dir}/redis.noevict.log
 ${compiled_package_dir}/parse_async_prom -logtostdout >> ${output_dir}/redis.noevict.log
 
-kill -9 `pgrep redis`
+kill -2 `pgrep redis`

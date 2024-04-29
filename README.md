@@ -33,10 +33,20 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 
 ### Software requirements
 
-To compile our Nomad module, you also need to install `gcc`, `make`, `pkg-config`, `time`, `python2`, `openjdk-8-jre` on the running server.
+**Operating System**
+We tested on both Ubuntu 22.04 and Debian 11. You may face technical issues when running Ubuntu 22.04, setting Persistent Memory is based on Debian 11.
 
+**Dependencies**
+To compile our Nomad module and userspace applications, you also need to:
+```
+sudo apt install gcc make pkg-config time python2 openjdk-8-jre rsync
+```
+When running Redis, we require YCSB, which requires `python` to be `python2`. In that case you need to create a soft link as below:
+```
+sudo ln -s /usr/bin/python2 /usr/bin/python
+```
 
-On persistent memory server you need to install 
+To configure persistent memory you need to:
 
 ```
 sudo apt install -y ndctl ipmctl
@@ -45,12 +55,12 @@ sudo apt install -y ndctl ipmctl
 
 ### Hardware requirements
 
-**Compiling code**
+**For code compilation**
 You'll need a minimum of 30GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as are available for compilation, as it can be time-consuming.
 
 
 **Running code**
-At present, our system requires one CPU with a memory NUMA node and one CPU-less NUMA memory node. We do not support multiple CPU NUMA nodes. If your system has more than one CPU NUMA node, you can disable the others and leave only one CPU node enabled in the BIOS settings. As for the memory NUMA node, you can use Persistent Memory, CXL Memory, or virtualize such configurations to run our code in virtual machines.
+At present, our system requires one CPU with a memory NUMA node and one CPU-less NUMA memory node. We do not support multiple CPU NUMA nodes. If your system has more than one CPU NUMA node, you can disable the others and leave only one CPU node enabled in the BIOS settings. As for the memory NUMA node, you can use Persistent Memory, CXL Memory (we use Intel Agilex in the paper), or virtualize such configurations to run our code in virtual machines.
 
 A typical hardware configuration appears as below:
 ```
@@ -193,14 +203,36 @@ warmup_zipfan_hottest_27G.bin
 ## Reproducing paper results
 
 ### Steps to take:
-1. Compile the code on a machine that has a lot of cores (Do this only once).
+1. Compile the code on a machine that has a lot of cores (Do this only once, up to 1 hour or more). See [Compiling the code](#compiling-the-code).
+   ```
+   sudo bash compile.sh
+   ```
 2. Install kernels (Do this on each machine you need to run on).
-3. Send compiled binary package to the running server
+   ```
+   sudo bash install.sh
+   ```
+3. Send compiled binary package to the running server. You may use rsync, sftp, scp to send the whole directory:
+
+   e.g. If you use `rsync`, you need to install `rsync` on both the sender and receiver machine. Don't forget to replace your user name, machine IP and the folder address.
+   ```
+   rsync -av src/tmp/output user_name@machine_ip:/home/foobar/Downloads
+   ```
 4. Compile the applications
    ```
    bash third_party/prepare.sh
    ```
-5. Setting up the machine
+5. Setting up the environment.
+   The global directory is set in file `global_dirs.sh`.
+	`compiled_package_dir` is the compiled kernel and access pattern files, it's the directory `/home/foobar/Downloads` in Step 3.
+	`output_log_dir` is the directory that contains the results.
+	`MEMTIS_CXL_OPTION` is an option for Memtis. If you are running on CXL memory, set it to `on`. Otherwise use `off`
+   ```
+	compiled_package_dir=src/tmp/output
+	output_log_dir=src/tmp/results
+
+	MEMTIS_CXL_OPTION=on
+   ```
+6. Setting up the machine
    * If it's a pmem server:
 		```
 		sudo bash src/testing_scripts/setup_system/setup_pmem.sh
@@ -209,8 +241,7 @@ warmup_zipfan_hottest_27G.bin
 		```
 		sudo bash src/testing_scripts/setup_system/setup_cxl.sh
 		```
-   * bash src/testing_scripts/setup_system/memtis_prepare.sh
-6. Setting up the OS:
+7. Setting up the OS:
    * If it's TPP:
 		```
 		sudo bash src/testing_scripts/setup_system/tpp_start_tiering.sh
@@ -218,14 +249,32 @@ warmup_zipfan_hottest_27G.bin
 	* If it's Nomad:
 		```
 		sudo bash src/testing_scripts/setup_system/nomad_start_tiering.sh
-		sudo bash src/testing_scripts/pageranking/run-nomad.sh
-		sudo bash src/testing_scripts/liblinear/run-nomad.sh
 		```
 	* If it's Memtis:
 		```
 		sudo bash src/testing_scripts/setup_system/memtis_prepare.sh
 		```
-sudo ln -s /usr/bin/python3 /usr/bin/python
+8. Run microbenchmark
+   
+        ```
+		sudo bash src/testing_scripts/microbenchmark/memtis_run.sh
+		```
+9.  Run Redis (Run Nomad and TPP. Don't run Redis on Memtis, it will fail)
+		
+		```
+		sudo bash src/testing_scripts/redis/run_redis.sh
+		```
+10. Run PageRanking
+		
+		```
+		sudo bash src/testing_scripts/pageranking/run.sh
+		```
+11. Run Liblinear
+		
+		```
+		sudo bash src/testing_scripts/liblinear/run.sh
+		```
+
 ### Matching paper results
 
 ## License

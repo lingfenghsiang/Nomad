@@ -28,4 +28,4 @@ echo end >> ${output_dir}/redis.${tag}.log
 cat /proc/vmstat  >> ${output_dir}/redis.${tag}.log
 ${compiled_package_dir}/parse_async_prom -logtostdout >> ${output_dir}/redis.${tag}.log
 
-kill -2 `pgrep redis`
+kill -9 `pgrep redis`

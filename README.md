@@ -256,24 +256,26 @@ warmup_zipfan_hottest_27G.bin
 		```
 8. Run microbenchmark
    
-        ```
-		sudo bash src/testing_scripts/microbenchmark/memtis_run.sh
-		```
+	```
+	sudo bash src/testing_scripts/microbenchmark/run.sh
+	```
 9.  Run Redis (Run Nomad and TPP. Don't run Redis on Memtis, it will fail)
 		
-		```
-		sudo bash src/testing_scripts/redis/run_redis.sh
-		```
+	```
+	sudo bash src/testing_scripts/redis/run_redis.sh
+	```
 10. Run PageRanking
 		
-		```
-		sudo bash src/testing_scripts/pageranking/run.sh
-		```
+	```
+	sudo bash src/testing_scripts/pageranking/run.sh
+	```
 11. Run Liblinear
-		
-		```
-		sudo bash src/testing_scripts/liblinear/run.sh
-		```
+	
+	```
+	sudo bash src/testing_scripts/liblinear/run.sh
+	```
+12. If you want to test another kernel, please reboot and select a different kernel and go to **step 6**. Otherwise go to the next step.
+13. 
 
 ### Matching paper results
 

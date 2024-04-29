@@ -15,9 +15,9 @@ MEM_NODES=($(ls /sys/devices/system/node | grep node | awk -F 'node' '{print $NF
 
 CGROUP_NAME="htmm"
 ###### update DIR!
+source global_dirs.sh
 
-
-CONFIG_CXL_MODE=off
+CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 
 
 function func_cache_flush() {
@@ -114,12 +114,11 @@ function func_main() {
 
 ################################ Main ##################################
 # BENCH_DRAM=7000MB # max memory for node 0 
-CONFIG_CXL_MODE=off
+CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 thp_setting=always 
 
 # BENCH_DRAM=7000MB # max memory for node 0
 
-source global_dirs.sh
 memtis_userspace=src/memtis_userspace
 bin_DIR=${compiled_package_dir}
 results_DIR=${output_log_dir}/redis-server-`uname -r`

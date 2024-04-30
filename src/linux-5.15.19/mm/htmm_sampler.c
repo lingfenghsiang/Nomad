@@ -30,7 +30,7 @@ static __u64 get_pebs_event(enum events e)
 	case DRAMREAD:
 	    return DRAM_LLC_LOAD_MISS;
 	case NVMREAD:
-	    if (!htmm_cxl_mode)
+	    if (htmm_cxl_mode)
 		return NVM_LLC_LOAD_MISS;
 	    else
 		return N_HTMMEVENTS;

@@ -1,10 +1,5 @@
 #!/bin/bash
 
-source global_dirs.sh
-redis_dir=third_party/tmp/redis-6.2.13
-
-rm *.rdb
-
 if [ -z $NTHREADS ]; then
     NTHREADS=$(grep -c processor /proc/cpuinfo)
 fi
@@ -35,12 +30,12 @@ function func_memtis_setting() {
     echo 100000 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
 	 
     echo 2000000 | tee /sys/kernel/mm/htmm/htmm_cooling_period
-	 
+ 
     echo 2 | tee /sys/kernel/mm/htmm/htmm_mode
     echo 500 | tee /sys/kernel/mm/htmm/htmm_demotion_period_in_ms
     echo 500 | tee /sys/kernel/mm/htmm/htmm_promotion_period_in_ms
     echo 4 | tee /sys/kernel/mm/htmm/htmm_gamma
-    ###  cpu cap (per mille) for ksampled
+    
     echo 30 | tee /sys/kernel/mm/htmm/ksampled_soft_cpu_quota
 
 
@@ -81,16 +76,13 @@ function func_prepare() {
 function func_main() {
     ${memtis_userspace}/bin/kill_ksampled  
     TIME="/usr/bin/time"
-    rm /tmp/liblinear_initialized
-    rm /tmp/liblinear_thrashed
+
      
     
 
-    # make directory for/run-memtis results-liblinear
-    mkdir -p ${results_DIR}/results-liblinear
-    LOG_DIR=${results_DIR}/results-liblinear 
-
- 
+    # make directory for run-memtis/results-pr
+    mkdir -p ${results_DIR}/results-pr/ 
+    LOG_DIR=${results_DIR}/results-pr/ 
 
     # set memcg for htmm
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
@@ -108,28 +100,31 @@ function func_main() {
     func_cache_flush
     sleep 2
 
-	 
-	${memtis_userspace}/bin/launch_bench_nopid     ${BENCH_RUN}  2>&1  | tee ${LOG_DIR}/output.log
+     
+
+
+	${TIME} -f "execution time %e (s)" \
+	${memtis_userspace}/bin/launch_bench_nopid     ${BENCH_RUN}  2>&1 \
+	    | tee ${LOG_DIR}/output.log
+     
+    # disable htmm
+    sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm $$ disable
 }
+ 
+
 
 ################################ Main ##################################
-# BENCH_DRAM=7000MB # max memory for node 0 
 CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 thp_setting=always 
+# BENCH_DRAM=7000MB # max memory for node 0 
 
-# BENCH_DRAM=7000MB # max memory for node 0
 
 memtis_userspace=src/memtis_userspace
 bin_DIR=${compiled_package_dir}
-results_DIR=${output_log_dir}/redis-server-`uname -r`
-mkdir -p ${results_DIR}
-BENCH_RUN="${redis_dir}/src/redis-server src/testing_scripts/redis/redis.conf"
-
-if [ `uname -r` = "5.15.19-htmm" ];then
-
-    func_prepare
-    func_main
-else
-    ${redis_dir}/src/redis-server src/testing_scripts/redis/redis.conf 
-fi
-
+results_DIR=${output_log_dir}/pageranking-`uname -r`
+BENCH_BIN=third_party/tmp/gapbs
+BENCH_RUN="${BENCH_BIN}/pr  -u26 -k20 -i10 -n100"
+ 
+ 
+func_prepare
+func_main

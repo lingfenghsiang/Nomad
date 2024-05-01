@@ -10,9 +10,9 @@ MEM_NODES=($(ls /sys/devices/system/node | grep node | awk -F 'node' '{print $NF
 
 CGROUP_NAME="htmm"
 ###### update DIR!
+source global_dirs.sh
 
-
-CONFIG_CXL_MODE=off
+CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 
 
 function func_cache_flush() {
@@ -118,10 +118,10 @@ function func_main() {
 
 
 ################################ Main ##################################
-CONFIG_CXL_MODE=off
+CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 thp_setting=always
 # BENCH_DRAM=7000MB # max memory for node 0
-source global_dirs.sh
+
 DIR=${output_log_dir}
 memtis_userspace=src/memtis_userspace
 result_dir=${output_log_dir}/microbench_memtis

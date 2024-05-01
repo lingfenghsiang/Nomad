@@ -1,10 +1,5 @@
 #!/bin/bash
 
-source global_dirs.sh
-redis_dir=third_party/tmp/redis-6.2.13
-
-rm *.rdb
-
 if [ -z $NTHREADS ]; then
     NTHREADS=$(grep -c processor /proc/cpuinfo)
 fi
@@ -108,9 +103,33 @@ function func_main() {
     func_cache_flush
     sleep 2
 
+     
+
+     
 	 
-	${memtis_userspace}/bin/launch_bench_nopid     ${BENCH_RUN}  2>&1  | tee ${LOG_DIR}/output.log
+	${memtis_userspace}/bin/launch_bench_nopid     ${BENCH_RUN}  2>&1  | tee ${LOG_DIR}/output.log    &
+
+    while [ ! -e "/tmp/liblinear_initialized" ]
+    do
+        sleep 1
+    done
+    
+    ${bin_DIR}/tpp_mem_access  -frun=${bin_DIR}/thrashing-15G.bin -anon \
+                -fwarmup=${bin_DIR}/thrashing-15G.bin --logtostderr
+
+    echo please run > /tmp/liblinear_thrashed
+
+    PID=`pgrep train`
+    while [ -e /proc/$PID ]
+    do
+        sleep 1
+    done
+
+     
+ 
 }
+ 
+
 
 ################################ Main ##################################
 # BENCH_DRAM=7000MB # max memory for node 0 
@@ -121,15 +140,10 @@ thp_setting=always
 
 memtis_userspace=src/memtis_userspace
 bin_DIR=${compiled_package_dir}
-results_DIR=${output_log_dir}/redis-server-`uname -r`
+results_DIR=${output_log_dir}/liblinear-`uname -r`
 mkdir -p ${results_DIR}
-BENCH_RUN="${redis_dir}/src/redis-server src/testing_scripts/redis/redis.conf"
+BENCH_BIN=third_party/tmp/liblinear-multicore-2.47
+BENCH_RUN="${BENCH_BIN}/train -s 6 -m 16 -e 0.000001  ${BENCH_BIN}/HIGGS"
 
-if [ `uname -r` = "5.15.19-htmm" ];then
-
-    func_prepare
-    func_main
-else
-    ${redis_dir}/src/redis-server src/testing_scripts/redis/redis.conf 
-fi
-
+func_prepare
+func_main

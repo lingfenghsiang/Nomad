@@ -10,12 +10,12 @@ mkdir -p ${output_dir}
 ${ycsb_dir}/bin/ycsb load redis -s -P src/testing_scripts/redis/workloada.${tag} -threads 10 -p redis.host=localhost -p redis.port=6379 
 echo > ${output_dir}/redis.${tag}.log
 
-sleep 5
+sleep 120
 
 ${compiled_package_dir}/tpp_mem_access -fwarmup=src/tmp/output/thrashing-10G.bin \
 	-frun=src/tmp/output/thrashing-10G.bin -fout=/tmp/tmp.log -sleep=3 --logtostderr
 
-sleep 5
+sleep 120
 
 echo start >> ${output_dir}/redis.${tag}.log
 cat /proc/vmstat  >> ${output_dir}/redis.${tag}.log

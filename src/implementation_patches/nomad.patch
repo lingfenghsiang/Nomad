@@ -369,10 +369,10 @@ index 000000000..559df8cad
 \ No newline at end of file
 diff --git a/src/linux-5.13-rc6/include/linux/nomad2.h b/src/linux-5.13-rc6/include/linux/nomad2.h
 new file mode 100644
-index 000000000..810d06650
+index 000000000..f3bba0803
 --- /dev/null
 +++ b/src/linux-5.13-rc6/include/linux/nomad2.h
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,62 @@
 +#ifndef _LINUX_NOMAD2_H
 +#define _LINUX_NOMAD2_H
 +
@@ -406,6 +406,9 @@ index 000000000..810d06650
 +struct demote_shadow_page_context{
 +	// should we use shadow page? 1 for yes, 0 for no
 +	int use_shadow_page;
++	// If we find one, increment this number by one. If shadow page is
++	// destroyed, then decrement by one. This is used for checking correctness.
++	int shadow_page_ref_num;
 +	int traversed_mapping_num;
 +	void *flags;
 +	// Sometimes pte may be write protected eventhough
@@ -1460,7 +1463,7 @@ index d79fa299b..7222ce4ea 100644
 +subsys_initcall(numa_init_sysfs);
 +#endif
 diff --git a/src/linux-5.13-rc6/mm/migrate.c b/src/linux-5.13-rc6/mm/migrate.c
-index b234c3f3a..17da24f22 100644
+index b234c3f3a..ee780f39b 100644
 --- a/src/linux-5.13-rc6/mm/migrate.c
 +++ b/src/linux-5.13-rc6/mm/migrate.c
 @@ -49,6 +49,9 @@
@@ -1881,7 +1884,7 @@ index b234c3f3a..17da24f22 100644
  		goto out_fail;
  	}
  
-@@ -3127,3 +3342,1455 @@ void migrate_vma_finalize(struct migrate_vma *migrate)
+@@ -3127,3 +3342,1467 @@ void migrate_vma_finalize(struct migrate_vma *migrate)
  }
  EXPORT_SYMBOL(migrate_vma_finalize);
  #endif /* CONFIG_DEVICE_PRIVATE */
@@ -3087,6 +3090,7 @@ index b234c3f3a..17da24f22 100644
 +	bool should_demote_page;
 +	struct demote_shadow_page_context contxt = {
 +		.use_shadow_page = 0,
++		.shadow_page_ref_num = 0,
 +		.traversed_mapping_num = 0,
 +		.was_writable_before_shadowed = false,
 +		.made_writable = false,
@@ -3133,6 +3137,17 @@ index b234c3f3a..17da24f22 100644
 +		set_page_demoted(newpage);
 +
 +	rc = __demotion_unmap_and_move(page, newpage, force, mode, &contxt);
++
++	if (likely(contxt.shadow_page_ref_num == 0)) {
++	} else if (contxt.shadow_page_ref_num == 1) {
++		// using a shadow page may fail, reclaim it
++		put_page(contxt.shadow_page);
++	} else {
++		pr_err("error shadow_page_ref_num is %d, rc? %d, not expected",
++		       contxt.shadow_page_ref_num, rc);
++		BUG();
++	}
++
 +	if (rc == MIGRATEPAGE_SUCCESS)
 +		set_page_owner_migrate_reason(newpage, reason);
 +

@@ -129,8 +129,8 @@ struct shadow_page_dev {
 	spinlock_t lock;
 	uint64_t kv_num;
 	uint64_t batch_free_num;
-	uint64_t demote_find_counter;
-	uint64_t demote_breakup_counter;
+	atomic64_t demote_find_counter;
+	atomic64_t demote_breakup_counter;
 	uint64_t link_num;
 	atomic64_t wp_num;
 	atomic64_t cow_num;
@@ -434,8 +434,8 @@ demote_shadow_page_find(struct page *page,
 		BUG();
 	}
 	contxt->use_shadow_page = 1;
+	contxt->shadow_page_ref_num += 1;
 	spin_lock(&mapping_dev.lock);
-	mapping_dev.demote_find_counter += 1;
 	shadow_page = xa_erase(&mapping_dev.page_mapping, (unsigned long)page);
 	mapping_dev.kv_num -= 1;
 	BUG_ON(page_mapcount(shadow_page) != 0);
@@ -450,9 +450,9 @@ demote_shadow_page_find(struct page *page,
 	get_page(shadow_page);
 	get_page(page);
 	contxt->shadow_page = shadow_page;
-
 	spin_unlock(&mapping_dev.lock);
 
+	atomic64_fetch_inc(&mapping_dev.demote_find_counter);
 out:
 
 	return shadow_page;
@@ -483,11 +483,9 @@ demote_shadow_page_breakup(struct page *oldpage,
 	} else {
 		ret = true;
 	}
-	spin_lock(&mapping_dev.lock);
-	mapping_dev.demote_breakup_counter += 1;
-	BUG_ON(mapping_dev.demote_breakup_counter !=
-	       mapping_dev.demote_find_counter);
-	spin_unlock(&mapping_dev.lock);
+	contxt->shadow_page_ref_num -= 1;
+	atomic64_fetch_inc(&mapping_dev.demote_breakup_counter);
+
 	// now the PTEs has already been cleared, there's no way for WP fault happening
 	// at this time, safe to drop page ref count
 	BUG_ON(!contxt->shadow_page);
@@ -645,7 +643,8 @@ static ssize_t read_module_status(char *buffer, size_t len, loff_t *offset,
 	output_buffer.task_num = context.task_num;
 	output_buffer.wp_num = atomic64_read(&mapping_dev.wp_num);
 	output_buffer.link_num = mapping_dev.link_num;
-	output_buffer.shadow_demote_num = mapping_dev.demote_breakup_counter;
+	output_buffer.shadow_demote_num =
+		atomic64_read(&mapping_dev.demote_breakup_counter);
 	output_buffer.batch_free_num = mapping_dev.batch_free_num;
 	output_buffer.transactional_migration_success =
 		context.transactional_success_nr;
@@ -1032,8 +1031,8 @@ static void destroy_promotion_context(struct promote_context *prom_context)
 static void initialize_shadow_mapping_dev(void)
 {
 	spin_lock_init(&mapping_dev.lock);
-	mapping_dev.demote_find_counter = 0;
-	mapping_dev.demote_breakup_counter = 0;
+	atomic64_set(&mapping_dev.demote_find_counter, 0);
+	atomic64_set(&mapping_dev.demote_breakup_counter, 0);
 	mapping_dev.link_num = 0;
 	mapping_dev.batch_free_num = 0;
 	mapping_dev.kv_num = 0;

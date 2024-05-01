@@ -12,8 +12,8 @@ echo > ${output_dir}/redis.${tag}.log
 
 sleep 5
 
-${compiled_package_dir}/tpp_mem_access -fwarmup=src/tmp/output/thrashing-10G.bin \
-	-frun=src/tmp/output/thrashing-10G.bin -fout=/tmp/tmp.log -sleep=3 --logtostderr
+${compiled_package_dir}/tpp_mem_access -fwarmup=${compiled_package_dir}/thrashing-10G.bin \
+	-frun=${compiled_package_dir}/thrashing-10G.bin -fout=/tmp/tmp.log -sleep=3 --logtostderr
 
 sleep 5
 

@@ -6,7 +6,7 @@ Lingfeng Xiang, Zhen Lin, Weishu Deng, Hui Lu, Jia Rao, Yifan Yuan, Ren Wang. "N
 
 This repository hosts the code for TPP, Nomad, Memtis, and various testing programs. We recommend compiling our code using Docker, as we have already configured the compilation environment within. You can compile the code on a server with the highest number of CPU cores to expedite the compilation process.
 
-If you want to setup the environment yourself. Please see [here](#setting-up-the-environment-by-yourself).
+If you want to setup the environment yourself, please see [here](#setting-up-the-environment-by-yourself).
 
 
 ## Table of Contents
@@ -65,7 +65,7 @@ sudo apt install -y ndctl ipmctl
 ### Hardware requirements
 
 **For code compilation**
-You'll need a minimum of 30GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as are available for compilation, as it can be time-consuming.
+You'll need a minimum of 30GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as possible for compilation, as it can be time-consuming.
 
 
 **Running code**
@@ -177,7 +177,7 @@ Estimated compile time on a 96 core E5-4640 server: 1hour
 After this step, you will get following compiled files under directory `src/tmp/output/` and you may directly send the folder `src/tmp/output/` to your testing platform:
 
 ```
-# ls src/tmp/output/
+ls -1 src/tmp/output/
 linux-headers-5.13.0-rc6nomad_5.13.0-rc6nomad-nomad_amd64.deb
 linux-headers-5.13.0-rc6tpp_5.13.0-rc6tpp-tpp_amd64.deb
 linux-headers-5.15.19-htmm_5.15.19-htmm-memtis_amd64.deb
@@ -190,6 +190,11 @@ linux-image-5.15.19-htmm-dbg_5.15.19-htmm-memtis_amd64.deb
 linux-libc-dev_5.13.0-rc6nomad-nomad_amd64.deb
 linux-libc-dev_5.13.0-rc6tpp-tpp_amd64.deb
 linux-libc-dev_5.15.19-htmm-memtis_amd64.deb
+parse_async_prom
+robustness-23G.bin
+robustness-25G.bin
+robustness-27G.bin
+robustness-29G.bin
 run_zipfan_first_touch_10G.bin
 run_zipfan_first_touch_13.5G.bin
 run_zipfan_first_touch_18G.bin
@@ -198,6 +203,8 @@ run_zipfan_hottest_10G.bin
 run_zipfan_hottest_13.5G.bin
 run_zipfan_hottest_18G.bin
 run_zipfan_hottest_27G.bin
+thrashing-10G.bin
+thrashing-15G.bin
 tpp_mem_access
 warmup_zipfan_first_touch_10G.bin
 warmup_zipfan_first_touch_13.5G.bin

@@ -263,8 +263,14 @@ sudo reboot
 	bash third_party/prepare.sh
 	```
 
-6. **On testing (CXL/PMem) machine**. Switch to a kernel you want to test (see section [Switch a kernel](#switch-a-kernel)) and reboot.
-
+6. **On testing (CXL/PMem) machine**. Switch to a kernel you want to test (see section [Switch a kernel](#switch-a-kernel)) and reboot. The available kernel version may look like:
+	```
+	Available kernel versions:
+	5.10.0-28-amd64 # original kernel
+	5.13.0-rc6nomad # nomad kernel
+	5.13.0-rc6tpp	# tpp kernel
+	5.15.19-htmm	# memtis kernel
+	```
 
 
 7.  **On testing (CXL/PMem) machine**. Setting up the machine

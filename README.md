@@ -304,7 +304,7 @@ sudo reboot
 	```
 	sudo bash src/testing_scripts/liblinear/run.sh
 	```
-13. **On testing (CXL/PMem) machine**. If you need to test a different kernel, go to step 5. Otherwise, you are done with running the tests.
+13. **On testing (CXL/PMem) machine**. If you need to test a different kernel, go to step 6. Otherwise, you are done with running the tests.
 
 
 ### Matching paper results

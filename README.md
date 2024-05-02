@@ -24,9 +24,18 @@ If you want to setup the environment yourself. Please see [here](#setting-up-the
 	- [Usage](#usage)
 		- [Download the code](#download-the-code)
 		- [Compiling the code](#compiling-the-code)
+		- [Switch a kernel](#switch-a-kernel)
 	- [Reproducing paper results](#reproducing-paper-results)
 		- [Steps to take:](#steps-to-take)
 		- [Matching paper results](#matching-paper-results)
+			- [Figure 7](#figure-7)
+			- [Figure 8](#figure-8)
+			- [Table 2](#table-2)
+			- [Table 3](#table-3)
+			- [Figure 9](#figure-9)
+			- [Figure 10](#figure-10)
+			- [Figure 11](#figure-11)
+			- [Figure 12](#figure-12)
 	- [License](#license)
 
 ## Prerequisites
@@ -200,6 +209,16 @@ warmup_zipfan_hottest_18G.bin
 warmup_zipfan_hottest_27G.bin
 ```
 
+### Switch a kernel
+If you need to switch a kernel version, please use the following script and follow the prompts in the terminal.
+```
+sudo bash src/testing_scripts/setup_system/switch_kernel.sh
+```
+Then you need to:
+```
+sudo reboot
+```
+
 ## Reproducing paper results
 
 ### Steps to take:
@@ -278,7 +297,7 @@ warmup_zipfan_hottest_27G.bin
 	```
 	sudo bash src/testing_scripts/liblinear/run.sh
 	```
-12. If you want to test another kernel, please reboot and select a different kernel and go to **step 6**. Otherwise go to the next step.
+12. If you want to test another kernel, switch to a different kernel (see section [Switch a kernel](#switch-a-kernel)) and go to **step 6**. Otherwise go to the next step.
 
 
 ### Matching paper results

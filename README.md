@@ -306,6 +306,10 @@ sudo reboot
 	```
 13. **On testing (CXL/PMem) machine**. If you need to test a different kernel, go to step 6. Otherwise, you are done with running the tests.
 
+14. **On testing (CXL/PMem) machine**. Run robustness test. This is for Nomad only and the hardware configuration should be 16GB local DRAM + 16GB slow memory (CXL/PMem).
+	```
+	sudo bash src/testing_scripts/microbenchmark/robustness.sh
+	```
 
 ### Matching paper results
 

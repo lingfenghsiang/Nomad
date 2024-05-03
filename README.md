@@ -13,6 +13,7 @@ If you want to setup the environment yourself, please see [here](#setting-up-the
 
 - [Nomad](#nomad)
 	- [Table of Contents](#table-of-contents)
+	- [Note](#note)
 	- [Prerequisites](#prerequisites)
 		- [Software requirements](#software-requirements)
 		- [Hardware requirements](#hardware-requirements)
@@ -38,12 +39,16 @@ If you want to setup the environment yourself, please see [here](#setting-up-the
 			- [Figure 12](#figure-12)
 	- [License](#license)
 
+## Note
+
+All the shell scripts should be run at this project root directory. Don't `cd` any folders to execute our scripts.
+
 ## Prerequisites
 
 ### Software requirements
 
 **Operating System**
-We tested on both Ubuntu 22.04 and Debian 11. You may face technical issues when running Ubuntu 22.04, setting Persistent Memory is based on Debian 11.
+We tested our code on both Ubuntu 22.04 and Debian 11. You may face technical issues when setting Persistent Memory on Ubuntu. It's recommended to install Debian (We tested 11, but didn't try Debian 12) on Persistent memory server to avoid such problems. Our compiling scripts only compile kernel packages for Debian-based GNU/Linux (like Ubuntu, Debian, Linux Mint etc.). If you run on Red Hat based OS (like CentOS, Fedora, RHEL), please search instructions about `rpm` kernel compiling options and update the compiling scripts.
 
 **Dependencies**
 To compile our Nomad module and userspace applications, you also need to:
@@ -278,7 +283,7 @@ sudo reboot
 	```
 
 
-7.  **On testing (CXL/PMem) machine**. Setting up the machine
+7.  **On testing (CXL/PMem) machine**. Setting up the machine (Do this everytime when you start the machine):
    * If it's a pmem server:
 		```
 		sudo bash src/testing_scripts/setup_system/setup_pmem.sh
@@ -288,7 +293,7 @@ sudo reboot
 		sudo bash src/testing_scripts/setup_system/setup_cxl.sh
 		```
 
-8.  **On testing (CXL/PMem) machine**. Setting up the OS:
+8.  **On testing (CXL/PMem) machine**. Setting up the OS (Do this everytime when you start the machine):
     * If it's TPP:
     	```
     	sudo bash src/testing_scripts/setup_system/tpp_start_tiering.sh
@@ -302,22 +307,22 @@ sudo reboot
     	```
     	sudo bash src/testing_scripts/setup_system/memtis_prepare.sh
     	```
-9.  **On testing (CXL/PMem) machine**. Run microbenchmark. (Run Nomad, TPP, Memtis)
+9.  **On testing (CXL/PMem) machine**. Run microbenchmark. (Run Nomad, TPP, Memtis. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
    
 	```
 	sudo bash src/testing_scripts/microbenchmark/run.sh
 	```
-10. **On testing (CXL/PMem) machine**. Run Redis. (Run Nomad and TPP. Don't run Redis on Memtis, it will fail) (Run Nomad, TPP)
+10. **On testing (CXL/PMem) machine**. Run Redis. (Run Nomad and TPP. Don't run Redis on Memtis, it will fail. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 		
 	```
 	sudo bash src/testing_scripts/redis/run_redis.sh
 	```
-11. **On testing (CXL/PMem) machine**. Run PageRanking. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed)
+11. **On testing (CXL/PMem) machine**. Run PageRanking. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 		
 	```
 	sudo bash src/testing_scripts/pageranking/run.sh
 	```
-12. **On testing (CXL/PMem) machine**. Run Liblinear. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed)
+12. **On testing (CXL/PMem) machine**. Run Liblinear. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 	
 	```
 	sudo bash src/testing_scripts/liblinear/run.sh

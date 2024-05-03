@@ -1,0 +1,8 @@
+{
+    "section_start_with": "-----------start-----------",
+    "section_end_with": "---------------------------",
+    "order_by": ["note"],
+    "group_by": [],
+    "data_columns": [
+    ],
+}

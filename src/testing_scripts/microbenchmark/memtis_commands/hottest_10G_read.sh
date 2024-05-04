@@ -126,6 +126,6 @@ DIR=${output_log_dir}
 memtis_userspace=src/memtis_userspace
 result_dir=${output_log_dir}/microbench_memtis
 mkdir -p ${result_dir}
-BENCH_RUN="${compiled_package_dir}/tpp_mem_access -fwarmup=${compiled_package_dir}/warmup_zipfan_hottest_10G.bin -frun=${compiled_package_dir}/run_zipfan_hottest_10G.bin -fout=${result_dir}/zipfan_hottest_10G.read.log --logtostderr -sleep=5 -work=2"
+BENCH_RUN="${compiled_package_dir}/tpp_mem_access -fwarmup=${compiled_package_dir}/warmup_zipfan_hottest_10G.bin -frun=${compiled_package_dir}/run_zipfan_hottest_10G.bin -fout=${result_dir}/zipfan_hottest_10G.read.log --logtostderr -sleep=10 -work=2"
 func_prepare
 func_main

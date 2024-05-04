@@ -317,6 +317,13 @@ sudo reboot
 	```
 	sudo bash src/testing_scripts/redis/run_redis.sh
 	```
+	If you encounter issues like `java.net.SocketTimeoutException: Read timed out`, you may need to run the each cases individually:
+	```
+	sudo bash src/testing_scripts/redis/run_redis.sh -r 1
+	sudo bash src/testing_scripts/redis/run_redis.sh -r 2
+	sudo bash src/testing_scripts/redis/run_redis.sh -r 3
+	```
+
 11. **On testing (CXL/PMem) machine**. Run PageRanking. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 		
 	```

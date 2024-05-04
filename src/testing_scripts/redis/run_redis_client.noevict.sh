@@ -10,7 +10,7 @@ mkdir -p ${output_dir}
 ${ycsb_dir}/bin/ycsb load redis -s -P src/testing_scripts/redis/workloada.${tag} -threads 10 -p redis.host=localhost -p redis.port=6379  -p redis.timeout=3600000
 echo > ${output_dir}/redis.noevict.log
 
-sleep 240
+sleep 10
 
 echo start >> ${output_dir}/redis.noevict.log
 cat /proc/vmstat  >> ${output_dir}/redis.noevict.log

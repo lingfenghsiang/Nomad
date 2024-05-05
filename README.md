@@ -383,6 +383,14 @@ After you run the test, you will find all the result logs in directory `src/tmp/
 | Raw data                            | All the Nomad log files for figure 7, figure 8 and figure 9                                                                                                      |
 | How to calculate Nomad success rate | `Success number` is `end_success_nr` - `start_success_nr`. `Abort number` is `end_retry_nr` - `start_retry_nr`. Success rate is `Success number`: `Abort number` |
 
+#### Table 4
+
+| Table info                          | Robustness |
+| ----------------------------------- | ----------------------------------- | 
+| Raw data |  `src/tmp/results/robustness_nomad/robustness-23G.log`, `src/tmp/results/robustness_nomad/robustness-25G.log`, `src/tmp/results/robustness_nomad/robustness-27G.log`, `src/tmp/results/robustness_nomad/robustness-29G.log` |
+| How to interpret |  Each round of test will have `[end_shadow_page_pair]:[30000]`. The number `30000` means there are 30000 shadow pages linked to fast tier pages when the tests are over. Please always check the last round of the test. |
+
+
 #### Figure 9
 
 

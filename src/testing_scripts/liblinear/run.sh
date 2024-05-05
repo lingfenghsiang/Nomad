@@ -5,5 +5,5 @@ elif [ `uname -r` = "5.13.0-rc6nomad" ];then
 elif [ `uname -r` = "5.13.0-rc6tpp" ];then
     bash src/testing_scripts/liblinear/run-nonmemtis.sh
 else
-    echo "don't run test on kernel `uname -r`"
+    bash src/testing_scripts/liblinear/run-nonmemtis.sh
 fi

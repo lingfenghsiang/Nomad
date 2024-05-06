@@ -27,7 +27,7 @@ If you want to setup the environment yourself, please see [here](#setting-up-the
 		- [Compiling the code](#compiling-the-code)
 		- [Switch a kernel](#switch-a-kernel)
 	- [Reproducing paper results](#reproducing-paper-results)
-		- [Steps to take:](#steps-to-take)
+		- [Steps to take](#steps-to-take)
 		- [Matching paper results](#matching-paper-results)
 			- [Figure 7](#figure-7)
 			- [Figure 8](#figure-8)
@@ -249,7 +249,7 @@ sudo reboot
 
 ## Reproducing paper results
 
-### Steps to take:
+### Steps to take
 1. **On compiling machine**. Compile the code on a machine that has a lot of cores (Do this only once on only one machine. It takes up to 1 hour or more). See [Compiling the code](#compiling-the-code).
    ```
    sudo bash compile.sh
@@ -352,7 +352,7 @@ sudo reboot
 	sudo bash src/testing_scripts/microbenchmark/robustness.sh
 	```
 
-15. **On testing (CXL/PMem) machine**. When you finish running all the tests, run the following command to generate plots.
+15. **On testing (CXL/PMem) machine**. When you finish running all the tests, run the following command to generate plots. To plot the graphs, you need to install some python packages, please see section [Software requirements](#software-requirements).
     ```
 	bash src/post_processing/plot_graphs.sh
 	```

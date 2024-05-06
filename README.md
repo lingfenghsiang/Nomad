@@ -6,7 +6,7 @@ Lingfeng Xiang, Zhen Lin, Weishu Deng, Hui Lu, Jia Rao, Yifan Yuan, Ren Wang. "N
 
 This repository hosts the code for TPP, Nomad, Memtis, and various testing programs. We recommend compiling our code using Docker, as we have already configured the compilation environment within. You can compile the code on a server with the highest number of CPU cores to expedite the compilation process.
 
-If you want to setup the environment yourself, please see [here](#setting-up-the-environment-by-yourself).
+If you want to setup the compiling environment yourself, please see [here](#setting-up-the-environment-by-yourself).
 
 
 ## Table of Contents

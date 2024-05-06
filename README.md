@@ -17,7 +17,7 @@ If you want to setup the environment yourself, please see [here](#setting-up-the
 	- [Prerequisites](#prerequisites)
 		- [Software requirements](#software-requirements)
 		- [Hardware requirements](#hardware-requirements)
-		- [Setting up Optane Persistent Memory](#setting-up-optane-persistent-memory)
+		- [Setting up Optane Persistent Memory as system memory](#setting-up-optane-persistent-memory-as-system-memory)
 		- [Setting up CXL memory](#setting-up-cxl-memory)
 		- [Compile using docker (Recommended)](#compile-using-docker-recommended)
 		- [Setting up the environment by yourself.](#setting-up-the-environment-by-yourself)
@@ -33,6 +33,7 @@ If you want to setup the environment yourself, please see [here](#setting-up-the
 			- [Figure 8](#figure-8)
 			- [Table 2](#table-2)
 			- [Table 3](#table-3)
+			- [Table 4](#table-4)
 			- [Figure 9](#figure-9)
 			- [Figure 10](#figure-10)
 			- [Figure 11](#figure-11)
@@ -75,7 +76,7 @@ pip3 install matplotlib pandas numpy json5
 ### Hardware requirements
 
 **For code compilation**
-You'll need a minimum of 30GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as possible for compilation, as it can be time-consuming.
+You'll need a minimum of 60GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as possible for compilation, as it can be time-consuming.
 
 
 **Running code**
@@ -87,17 +88,25 @@ A typical hardware configuration appears as below:
 available: 2 nodes (0-1)
 node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
 node 0 size: 15264 MB
-node 0 free: 12065 MB
+node 0 free: 13707 MB
 node 1 cpus:
 node 1 size: 16127 MB
-node 1 free: 15924 MB
+node 1 free: 16017 MB
 node distances:
 node   0   1
   0:  10  14
   1:  14  10
 ```
 
-### Setting up Optane Persistent Memory
+The hardware memory size may greatly influence the performance of microbenchmarks, especially for [medium working set size case](#figure-8). For medium size microbenchmark, you need to have free memory almost equivalent to the RSS (13.5GB in the case of our microbenchmark). A slightly larger local memory will turn it into the small working set size case where the whole RSS is accommodated in local DRAM.
+
+To set local DRAM sizes, you may add `GRUB_CMDLINE_LINUX="memmap=nn[KMG]!ss[KMG]"` in your `/etc/default/grub` file. For more details, you may check [this link](https://pmem.io/blog/2016/02/how-to-emulate-persistent-memory/).
+
+When tuning the local memory size, you may need pay attention to the space overhead for `struct page`. For instance, let's say you have 32GB of local DRAM and 512GB of persistent memory. Each 4KB persistent memory requires a 64-byte `struct page` on local DRAM, which results in 8GB `struct page` on local DRAM allocated, even though no application is running.
+
+
+
+### Setting up Optane Persistent Memory as system memory
 
 Reconfigure persistent memory hardware.
 ```
@@ -365,6 +374,8 @@ After you run the test, you will find all the result logs in directory `src/tmp/
 | Raw data directory | `src/tmp/results/microbench_memtis/zipfan_hottest_13.5G.read.log`, `src/tmp/results/microbench_memtis/zipfan_hottest_13.5G.write.log`, `src/tmp/results/microbench_nomad/zipfan_hottest_13.5G.read.log`, `src/tmp/results/microbench_nomad/zipfan_hottest_13.5G.write.log`, `src/tmp/results/microbench_tpp/zipfan_hottest_13.5G.read.log`, `src/tmp/results/microbench_tpp/zipfan_hottest_13.5G.write.log` |
 | How to interpret   | In each log file, you will find the log for five rounds. In each round, you can find a line including `[note]:[number]`, indicating which round it is. The first round (`[note]:[0]`) is for warming up, the second round (`[note]:[1]`) is for "migration in process" and the last round (`[note]:[4]`) is for "migration stable" in the paper.                                                            |
 | Plot path | `src/post_processing/tmp/microbenchmedium-read.png`, `src/post_processing/tmp/microbenchmedium-write.png` |
+| Note | If you find that TPP hasn't migrated pages in the last few rounds, it's probable that the fast tier has already accommodated the RSS. Please take a look at section [Hardware requirements](#hardware-requirements) |
+
 #### Table 2
 
 | Table info                              | Number of promotions                                                                                                                                         |

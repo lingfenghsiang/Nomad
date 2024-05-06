@@ -172,6 +172,8 @@ sudo adduser `id -un` libvirt
 sudo adduser `id -un` kvm
 ```
 
+In the folder `src/vm_scripts`, you'll find some scripts designed to configure a virtual machine with a CPU-less memory node. Feel free to explore them further.
+
 ## Usage
 
 This section focuses on how to compile our code, install the packed kernel, and how to run our code.

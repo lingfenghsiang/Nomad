@@ -1,5 +1,4 @@
-
-python3 src/post_processing/generate_microbenchcsv.sh
+bash src/post_processing/generate_microbenchcsv.sh
 
 python3 src/post_processing/plot_microbench.py
 python3 src/post_processing/plot_redis.py

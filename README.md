@@ -6,7 +6,7 @@ Lingfeng Xiang, Zhen Lin, Weishu Deng, Hui Lu, Jia Rao, Yifan Yuan, Ren Wang. "N
 
 This repository hosts the code for TPP, Nomad, Memtis, and various testing programs. We recommend compiling our code using Docker, as we have already configured the compilation environment within. You can compile the code on a server with the highest number of CPU cores to expedite the compilation process.
 
-If you want to setup the environment yourself, please see [here](#setting-up-the-environment-by-yourself).
+If you want to setup the compiling environment yourself, please see [here](#setting-up-the-environment-by-yourself).
 
 
 ## Table of Contents
@@ -17,7 +17,7 @@ If you want to setup the environment yourself, please see [here](#setting-up-the
 	- [Prerequisites](#prerequisites)
 		- [Software requirements](#software-requirements)
 		- [Hardware requirements](#hardware-requirements)
-		- [Setting up Optane Persistent Memory](#setting-up-optane-persistent-memory)
+		- [Setting up Optane Persistent Memory as system memory](#setting-up-optane-persistent-memory-as-system-memory)
 		- [Setting up CXL memory](#setting-up-cxl-memory)
 		- [Compile using docker (Recommended)](#compile-using-docker-recommended)
 		- [Setting up the environment by yourself.](#setting-up-the-environment-by-yourself)
@@ -27,12 +27,13 @@ If you want to setup the environment yourself, please see [here](#setting-up-the
 		- [Compiling the code](#compiling-the-code)
 		- [Switch a kernel](#switch-a-kernel)
 	- [Reproducing paper results](#reproducing-paper-results)
-		- [Steps to take:](#steps-to-take)
+		- [Steps to take](#steps-to-take)
 		- [Matching paper results](#matching-paper-results)
 			- [Figure 7](#figure-7)
 			- [Figure 8](#figure-8)
 			- [Table 2](#table-2)
 			- [Table 3](#table-3)
+			- [Table 4](#table-4)
 			- [Figure 9](#figure-9)
 			- [Figure 10](#figure-10)
 			- [Figure 11](#figure-11)
@@ -75,7 +76,7 @@ pip3 install matplotlib pandas numpy json5
 ### Hardware requirements
 
 **For code compilation**
-You'll need a minimum of 30GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as possible for compilation, as it can be time-consuming.
+You'll need a minimum of 60GB of disk space and 16GB of memory. The machine used for compilation doesn't necessarily have to be the same one where the code will run. Utilize as many CPUs as possible for compilation, as it can be time-consuming.
 
 
 **Running code**
@@ -87,17 +88,25 @@ A typical hardware configuration appears as below:
 available: 2 nodes (0-1)
 node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
 node 0 size: 15264 MB
-node 0 free: 12065 MB
+node 0 free: 13707 MB
 node 1 cpus:
 node 1 size: 16127 MB
-node 1 free: 15924 MB
+node 1 free: 16017 MB
 node distances:
 node   0   1
   0:  10  14
   1:  14  10
 ```
 
-### Setting up Optane Persistent Memory
+The hardware memory size may greatly influence the performance of microbenchmarks, especially for [medium working set size case](#figure-8). For medium size microbenchmark, you need to have free memory almost equivalent to the RSS (13.5GB in the case of our microbenchmark). A slightly larger local memory will turn it into the small working set size case where the whole RSS is accommodated in local DRAM.
+
+To set local DRAM sizes, you may add `GRUB_CMDLINE_LINUX="memmap=nn[KMG]!ss[KMG]"` in your `/etc/default/grub` file. For more details, you may check [this link](https://pmem.io/blog/2016/02/how-to-emulate-persistent-memory/).
+
+When tuning the local memory size, you may need pay attention to the space overhead for `struct page`. For instance, let's say you have 32GB of local DRAM and 512GB of persistent memory. Each 4KB persistent memory requires a 64-byte `struct page` on local DRAM, which results in 8GB `struct page` on local DRAM allocated, even though no application is running.
+
+
+
+### Setting up Optane Persistent Memory as system memory
 
 Reconfigure persistent memory hardware.
 ```
@@ -162,6 +171,8 @@ sudo apt-get install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
 sudo adduser `id -un` libvirt
 sudo adduser `id -un` kvm
 ```
+
+In the folder `src/vm_scripts`, you'll find some scripts designed to configure a virtual machine with a CPU-less memory node. Feel free to explore them further.
 
 ## Usage
 
@@ -238,7 +249,7 @@ sudo reboot
 
 ## Reproducing paper results
 
-### Steps to take:
+### Steps to take
 1. **On compiling machine**. Compile the code on a machine that has a lot of cores (Do this only once on only one machine. It takes up to 1 hour or more). See [Compiling the code](#compiling-the-code).
    ```
    sudo bash compile.sh
@@ -307,34 +318,41 @@ sudo reboot
     	```
     	sudo bash src/testing_scripts/setup_system/memtis_prepare.sh
     	```
-9.  **On testing (CXL/PMem) machine**. Run microbenchmark. (Run Nomad, TPP, Memtis. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
+9.  **On testing (CXL/PMem) machine**. Run microbenchmark.  30-45minutes. (Run Nomad, TPP, Memtis. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
    
 	```
 	sudo bash src/testing_scripts/microbenchmark/run.sh
 	```
-10. **On testing (CXL/PMem) machine**. Run Redis. (Run Nomad and TPP. Don't run Redis on Memtis, it will fail. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
+10. **On testing (CXL/PMem) machine**. Run Redis. Less than 1 hour. (Run Nomad and TPP. Don't run Redis on Memtis, it will fail. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 		
 	```
 	sudo bash src/testing_scripts/redis/run_redis.sh
 	```
-11. **On testing (CXL/PMem) machine**. Run PageRanking. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
+	If you encounter issues like `java.net.SocketTimeoutException: Read timed out`, you may need to run the each cases individually:
+	```
+	sudo bash src/testing_scripts/redis/run_redis.sh -r 1
+	sudo bash src/testing_scripts/redis/run_redis.sh -r 2
+	sudo bash src/testing_scripts/redis/run_redis.sh -r 3
+	```
+
+11. **On testing (CXL/PMem) machine**. Run PageRanking. 30-45minutes. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 		
 	```
 	sudo bash src/testing_scripts/pageranking/run.sh
 	```
-12. **On testing (CXL/PMem) machine**. Run Liblinear. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
+12. **On testing (CXL/PMem) machine**. Run Liblinear. 30-45minutes. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 	
 	```
 	sudo bash src/testing_scripts/liblinear/run.sh
 	```
 13. **On testing (CXL/PMem) machine**. If you need to test a different kernel, go to step 6. Otherwise, you are done with running the tests.
 
-14. **On testing (CXL/PMem) machine**. Run robustness test. This is for **Nomad only** and the hardware configuration should be 16GB local DRAM + 16GB slow memory (CXL/PMem).
+14. **On testing (CXL/PMem) machine**. Run robustness test. 15 minutes. This is for **Nomad only** and the hardware configuration should be 16GB local DRAM + 16GB slow memory (CXL/PMem).
 	```
 	sudo bash src/testing_scripts/microbenchmark/robustness.sh
 	```
 
-15. **On testing (CXL/PMem) machine**. When you finish running all the tests, run the following command to generate plots.
+15. **On testing (CXL/PMem) machine**. When you finish running all the tests, run the following command to generate plots. To plot the graphs, you need to install some python packages, please see section [Software requirements](#software-requirements).
     ```
 	bash src/post_processing/plot_graphs.sh
 	```
@@ -358,6 +376,8 @@ After you run the test, you will find all the result logs in directory `src/tmp/
 | Raw data directory | `src/tmp/results/microbench_memtis/zipfan_hottest_13.5G.read.log`, `src/tmp/results/microbench_memtis/zipfan_hottest_13.5G.write.log`, `src/tmp/results/microbench_nomad/zipfan_hottest_13.5G.read.log`, `src/tmp/results/microbench_nomad/zipfan_hottest_13.5G.write.log`, `src/tmp/results/microbench_tpp/zipfan_hottest_13.5G.read.log`, `src/tmp/results/microbench_tpp/zipfan_hottest_13.5G.write.log` |
 | How to interpret   | In each log file, you will find the log for five rounds. In each round, you can find a line including `[note]:[number]`, indicating which round it is. The first round (`[note]:[0]`) is for warming up, the second round (`[note]:[1]`) is for "migration in process" and the last round (`[note]:[4]`) is for "migration stable" in the paper.                                                            |
 | Plot path | `src/post_processing/tmp/microbenchmedium-read.png`, `src/post_processing/tmp/microbenchmedium-write.png` |
+| Note | If you find that TPP hasn't migrated pages in the last few rounds, it's probable that the fast tier has already accommodated the RSS. Please take a look at section [Hardware requirements](#hardware-requirements) |
+
 #### Table 2
 
 | Table info                              | Number of promotions                                                                                                                                         |
@@ -375,6 +395,14 @@ After you run the test, you will find all the result logs in directory `src/tmp/
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Raw data                            | All the Nomad log files for figure 7, figure 8 and figure 9                                                                                                      |
 | How to calculate Nomad success rate | `Success number` is `end_success_nr` - `start_success_nr`. `Abort number` is `end_retry_nr` - `start_retry_nr`. Success rate is `Success number`: `Abort number` |
+
+#### Table 4
+
+| Table info                          | Robustness |
+| ----------------------------------- | ----------------------------------- | 
+| Raw data |  `src/tmp/results/robustness_nomad/robustness-23G.log`, `src/tmp/results/robustness_nomad/robustness-25G.log`, `src/tmp/results/robustness_nomad/robustness-27G.log`, `src/tmp/results/robustness_nomad/robustness-29G.log` |
+| How to interpret |  Each round of test will have `[end_shadow_page_pair]:[30000]`. The number `30000` means there are 30000 shadow pages linked to fast tier pages when the tests are over. Please always check the last round of the test. |
+
 
 #### Figure 9
 

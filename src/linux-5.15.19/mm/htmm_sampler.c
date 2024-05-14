@@ -69,7 +69,7 @@ static int __perf_event_open(__u64 config, __u64 config1, __u64 cpu,
     attr.exclude_hv = 1;
     attr.exclude_callchain_kernel = 1;
     attr.exclude_callchain_user = 1;
-    attr.precise_ip = 1;
+    attr.precise_ip = 0;
     attr.enable_on_exec = 1;
 
     if (pid == 0)

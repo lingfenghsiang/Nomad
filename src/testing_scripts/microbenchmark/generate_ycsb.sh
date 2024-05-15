@@ -72,6 +72,16 @@ func14(){
     ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-10block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -o $offset -f ${output_dir}/run_zipfan_hottest_10block.bin
 }
 
+func15(){
+    offset=`${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-13block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -f ${output_dir}/warmup_zipfan_hottest_13block.bin`
+    ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-13block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -o $offset -f ${output_dir}/run_zipfan_hottest_13block.bin
+}
+
+func16(){
+    offset=`${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-27block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -f ${output_dir}/warmup_zipfan_hottest_27block.bin`
+    ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-27block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -o $offset -f ${output_dir}/run_zipfan_hottest_27block.bin
+}
+
 func1 &
 func2 &
 func3 &
@@ -86,5 +96,7 @@ func11 &
 func12 &
 func13 &
 func14 &
+func15 &
+func16 &
 wait
 echo "pattern files generated"

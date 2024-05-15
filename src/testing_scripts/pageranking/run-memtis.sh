@@ -30,12 +30,12 @@ function func_memtis_setting() {
     echo 100000 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
 	 
     echo 2000000 | tee /sys/kernel/mm/htmm/htmm_cooling_period
- 
+	 
     echo 2 | tee /sys/kernel/mm/htmm/htmm_mode
     echo 500 | tee /sys/kernel/mm/htmm/htmm_demotion_period_in_ms
     echo 500 | tee /sys/kernel/mm/htmm/htmm_promotion_period_in_ms
     echo 4 | tee /sys/kernel/mm/htmm/htmm_gamma
-    
+    ###  cpu cap (per mille) for ksampled
     echo 30 | tee /sys/kernel/mm/htmm/ksampled_soft_cpu_quota
 
 
@@ -88,7 +88,7 @@ function func_main() {
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm $$ enable
 	 
-	echo dram size ${BENCH_DRAM} is !!!!!!!!!!!!!!
+	echo dram size is ${BENCH_DRAM} !!!!!!!!!!!!!!
     sudo ${memtis_userspace}/scripts/set_mem_size.sh htmm 0 ${BENCH_DRAM}
     sleep 2
 

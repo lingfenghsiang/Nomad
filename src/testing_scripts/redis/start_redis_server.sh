@@ -96,7 +96,7 @@ function func_main() {
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm $$ enable
 	 
-	echo dram size ${BENCH_DRAM} is !!!!!!!!!!!!!!
+	echo dram size is ${BENCH_DRAM} !!!!!!!!!!!!!!
     sudo ${memtis_userspace}/scripts/set_mem_size.sh htmm 0 ${BENCH_DRAM}
     sleep 2
 

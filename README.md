@@ -265,8 +265,12 @@ sudo reboot
 3. **On testing (CXL/PMem) machine**. Setting up the environment.
    The global directory is set in file `global_dirs.sh`.
 	`compiled_package_dir` is the compiled kernel and access pattern files, it's the directory `/home/foobar/Downloads/output` in Step 2, if you send output to the aforementioned example directory.
+
 	`output_log_dir` is the directory that contains the results.
+
 	`MEMTIS_CXL_OPTION` is an option for Memtis. This option is used to select event and determine memory node. We already hard coded the event and the memory node. Please always set it to `on`, whether or not it's a CXL machine.
+
+	`FAST_TIER_MEMORY` is the fast tier memory size. You must specify that when you run memtis. Recommended to set it to the free memory size when the machine starts.
    ```
 	compiled_package_dir=src/tmp/output
 	output_log_dir=src/tmp/results

@@ -67,6 +67,11 @@ func13(){
     python3 ${script_dir}/create_thrashing.py -f ${output_dir}/thrashing-10G.bin -s 10
 }
 
+func14(){
+    offset=`${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-10block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -f ${output_dir}/warmup_zipfan_hottest_10block.bin`
+    ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-10block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -o $offset -f ${output_dir}/run_zipfan_hottest_10block.bin
+}
+
 func1 &
 func2 &
 func3 &
@@ -80,6 +85,6 @@ func10 &
 func11 &
 func12 &
 func13 &
-
+func14 &
 wait
 echo "pattern files generated"

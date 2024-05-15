@@ -127,7 +127,7 @@ function func_main() {
     # set memcg for htmm
     sudo ${DIR}/scripts/set_htmm_memcg.sh htmm remove
     sudo ${DIR}/scripts/set_htmm_memcg.sh htmm $$ enable
-	# BENCH_DRAM=7000MB
+	BENCH_DRAM=${FAST_TIER_MEMORY}
 	# echo dram size ${BENCH_DRAM} is !!!!!!!!!!!!!!
     # sudo ${DIR}/scripts/set_mem_size.sh htmm 0 ${BENCH_DRAM}
     sleep 2

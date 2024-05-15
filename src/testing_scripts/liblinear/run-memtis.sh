@@ -132,11 +132,11 @@ function func_main() {
 
 
 ################################ Main ##################################
-# BENCH_DRAM=7000MB # max memory for node 0 
+BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0 
 CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 thp_setting=always 
 
-# BENCH_DRAM=7000MB # max memory for node 0
+BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0
 
 memtis_userspace=src/memtis_userspace
 bin_DIR=${compiled_package_dir}

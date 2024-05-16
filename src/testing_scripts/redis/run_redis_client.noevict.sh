@@ -5,7 +5,13 @@ source global_dirs.sh
 
 tag=large
 ycsb_dir=third_party/tmp/ycsb-0.17.0
-output_dir=${output_log_dir}/redis-`uname -r`
+
+if [ `uname -r` = "5.15.19-htmm" ];then
+	output_dir=${output_log_dir}/redis-`uname -r`-${MEMTIS_COOLING_PERIOD}
+else
+    output_dir=${output_log_dir}/redis-`uname -r`
+fi
+
 mkdir -p ${output_dir}
 ${ycsb_dir}/bin/ycsb load redis -s -P src/testing_scripts/redis/workloada.${tag} -threads 10 -p redis.host=localhost -p redis.port=6379  -p redis.timeout=3600000
 echo > ${output_dir}/redis.noevict.log

@@ -101,6 +101,7 @@ node   0   1
 The hardware memory size may greatly influence the performance of microbenchmarks, especially for [medium working set size case](#figure-8). For medium size microbenchmark, you need to have free memory almost equivalent to the RSS (13.5GB in the case of our microbenchmark). A slightly larger local memory will turn it into the small working set size case where the whole RSS is accommodated in local DRAM.
 
 To set local DRAM sizes, you may add `GRUB_CMDLINE_LINUX="memmap=nn[KMG]!ss[KMG]"` in your `/etc/default/grub` file. For more details, you may check [this link](https://pmem.io/blog/2016/02/how-to-emulate-persistent-memory/).
+*Note*: You need to put "memmap" option in a single line, because our switch kernel script may comment this line accordingly.
 
 When tuning the local memory size, you may need pay attention to the space overhead for `struct page`. For instance, let's say you have 32GB of local DRAM and 512GB of persistent memory. Each 4KB persistent memory requires a 64-byte `struct page` on local DRAM, which results in 8GB `struct page` on local DRAM allocated, even though no application is running.
 

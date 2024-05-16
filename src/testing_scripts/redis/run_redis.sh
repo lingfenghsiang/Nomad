@@ -37,7 +37,7 @@ echo "Run test: $arg_a"
 
 case1(){
     bash src/testing_scripts/redis/start_redis_server.sh &
-    sleep 5
+    sleep 30
     bash src/testing_scripts/redis/run_redis_client.small.sh
     sleep 60
 
@@ -46,7 +46,7 @@ case1(){
 
 case2(){
     bash src/testing_scripts/redis/start_redis_server.sh &
-    sleep 5
+    sleep 30
     bash src/testing_scripts/redis/run_redis_client.large.sh
     sleep 60
 
@@ -55,7 +55,7 @@ case2(){
 
 case3(){
     bash src/testing_scripts/redis/start_redis_server.sh &
-    sleep 5
+    sleep 30
     bash src/testing_scripts/redis/run_redis_client.noevict.sh
     sleep 60
 

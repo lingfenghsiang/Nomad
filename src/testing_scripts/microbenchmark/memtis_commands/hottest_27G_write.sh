@@ -29,7 +29,7 @@ function func_memtis_setting() {
     echo 2 | tee /sys/kernel/mm/htmm/htmm_split_period
     echo 100000 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
 	 
-    echo 2000000 | tee /sys/kernel/mm/htmm/htmm_cooling_period
+    echo ${MEMTIS_COOLING_PERIOD} | tee /sys/kernel/mm/htmm/htmm_cooling_period
 	 
     echo 2 | tee /sys/kernel/mm/htmm/htmm_mode
     echo 500 | tee /sys/kernel/mm/htmm/htmm_demotion_period_in_ms
@@ -80,8 +80,8 @@ function func_main() {
 
 
     # make directory for run-memtis-27g-write/results-pr
-    mkdir -p ${DIR}/microbench_memtis/run-memtis-27g-write/microbench/
-    LOG_DIR=${DIR}/microbench_memtis/run-memtis-27g-write/microbench/
+    mkdir -p ${result_dir}/run-memtis-27g-write/microbench/
+    LOG_DIR=${result_dir}/run-memtis-27g-write/microbench/
 
     # set memcg for htmm
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
@@ -123,7 +123,7 @@ thp_setting=always
 BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0
 DIR=${output_log_dir}
 memtis_userspace=src/memtis_userspace
-result_dir=${output_log_dir}/microbench_memtis
+result_dir=${output_log_dir}/microbench_memtis-${MEMTIS_COOLING_PERIOD}
 mkdir -p ${result_dir}
 BENCH_RUN="${compiled_package_dir}/tpp_mem_access -fwarmup=${compiled_package_dir}/warmup_zipfan_hottest_27G.bin -frun=${compiled_package_dir}/warmup_zipfan_hottest_27G.bin -fout=${result_dir}/zipfan_hottest_27G.write.log --logtostderr -sleep=10 -work=0"
 func_prepare

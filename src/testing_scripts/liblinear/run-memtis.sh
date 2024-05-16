@@ -29,7 +29,7 @@ function func_memtis_setting() {
     echo 2 | tee /sys/kernel/mm/htmm/htmm_split_period
     echo 100000 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
 	 
-    echo 2000000 | tee /sys/kernel/mm/htmm/htmm_cooling_period
+    echo ${MEMTIS_COOLING_PERIOD} | tee /sys/kernel/mm/htmm/htmm_cooling_period
 	 
     echo 2 | tee /sys/kernel/mm/htmm/htmm_mode
     echo 500 | tee /sys/kernel/mm/htmm/htmm_demotion_period_in_ms
@@ -140,7 +140,7 @@ BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0
 
 memtis_userspace=src/memtis_userspace
 bin_DIR=${compiled_package_dir}
-results_DIR=${output_log_dir}/liblinear-`uname -r`
+results_DIR=${output_log_dir}/liblinear-`uname -r`-${MEMTIS_COOLING_PERIOD}
 mkdir -p ${results_DIR}
 BENCH_BIN=third_party/tmp/liblinear-multicore-2.47
 BENCH_RUN="${BENCH_BIN}/train -s 6 -m 16 -e 0.000001  ${BENCH_BIN}/HIGGS"

@@ -35,9 +35,9 @@ sed -i "s/GRUB_DEFAULT=.*/GRUB_DEFAULT=\"$MID>$KID\"/" /etc/default/grub
 
 
 if [ $kernel_version = "5.15.19-htmm" ];then
-    sed -i '/^#.*memmap/ s/^#//' /etc/default/grub
+    sed -i '/^[^#].*memmap/ s/^/#/' /etc/default/grub   
 else
-    sed -i '/^[^#].*memmap/ s/^/#/' /etc/default/grub
+    sed -i '/^#.*memmap/ s/^#//' /etc/default/grub
 fi
 
 

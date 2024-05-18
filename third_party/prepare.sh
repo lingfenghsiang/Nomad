@@ -23,6 +23,9 @@ make
 wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/HIGGS.xz
 xz -d HIGGS.xz
 
+wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/webspam_wc_normalized_trigram.svm.xz
+xz -d webspam_wc_normalized_trigram.svm.xz
+
 cd ${curr_dir}
 
 wget https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz -P third_party/tmp/

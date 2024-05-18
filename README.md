@@ -339,17 +339,36 @@ sudo reboot
 	sudo bash src/testing_scripts/redis/run_redis.sh -r 2
 	sudo bash src/testing_scripts/redis/run_redis.sh -r 3
 	```
+	If your machine has capacity layer significantly large (45GB or more, you may run huge test):
+	```
+	sudo bash src/testing_scripts/pageranking/run-huge.sh
+	```
+	To run them individually
+	```
+	sudo bash src/testing_scripts/pageranking/run-huge.sh -r 1
+
+	sudo bash src/testing_scripts/pageranking/run-huge.sh -r 2
+	```
 
 11. **On testing (CXL/PMem) machine**. Run PageRanking. 30-45minutes. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 		
 	```
 	sudo bash src/testing_scripts/pageranking/run.sh
 	```
+	If your machine has capacity layer significantly large (45GB or more, you may run huge test):
+	```
+	sudo bash src/testing_scripts/pageranking/run-huge.sh
+	```
 12. **On testing (CXL/PMem) machine**. Run Liblinear. 30-45minutes. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 	
 	```
 	sudo bash src/testing_scripts/liblinear/run.sh
 	```
+	If your machine has capacity layer significantly large (45GB or more, you may run huge test):
+	```
+	sudo bash src/testing_scripts/liblinear/run-huge.sh
+	```
+
 13. **On testing (CXL/PMem) machine**. If you need to test a different kernel, go to step 6. Otherwise, you are done with running the tests.
 
 14. **On testing (CXL/PMem) machine**. Run robustness test. 15 minutes. This is for **Nomad only** and the hardware configuration should be 16GB local DRAM + 16GB slow memory (CXL/PMem).

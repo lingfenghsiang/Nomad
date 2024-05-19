@@ -36,7 +36,7 @@ echo "Run test: $arg_a"
 
 
 case1(){
-    bash src/testing_scripts/redis/start_redis_server.sh &
+    bash src/testing_scripts/redis/start_redis_server.sh huge &
     sleep 30
     bash src/testing_scripts/redis/run_redis_client.huge.sh
     sleep 60
@@ -45,7 +45,7 @@ case1(){
 }
 
 case2(){
-    bash src/testing_scripts/redis/start_redis_server.sh &
+    bash src/testing_scripts/redis/start_redis_server.sh huge-nothrash &
     sleep 30
     bash src/testing_scripts/redis/run_redis_client.huge.noevict.sh
     sleep 60

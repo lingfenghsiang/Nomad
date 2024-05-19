@@ -7,9 +7,9 @@ tag=large
 ycsb_dir=third_party/tmp/ycsb-0.17.0
 
 if [ `uname -r` = "5.15.19-htmm" ];then
-	output_dir=${output_log_dir}/redis-`uname -r`-${MEMTIS_COOLING_PERIOD}
+	output_dir=${output_log_dir}/redis-${tag}-noevict-`uname -r`-${MEMTIS_COOLING_PERIOD}
 else
-    output_dir=${output_log_dir}/redis-`uname -r`
+    output_dir=${output_log_dir}/redis-${tag}-noevict-`uname -r`
 fi
 
 mkdir -p ${output_dir}

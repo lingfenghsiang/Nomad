@@ -121,7 +121,11 @@ BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0
 
 memtis_userspace=src/memtis_userspace
 bin_DIR=${compiled_package_dir}
+if [ -z "$1" ]; then
+results_DIR=${output_log_dir}/redis-server-${$1}-`uname -r`-${MEMTIS_COOLING_PERIOD}
+else
 results_DIR=${output_log_dir}/redis-server-`uname -r`-${MEMTIS_COOLING_PERIOD}
+fi
 mkdir -p ${results_DIR}
 BENCH_RUN="${redis_dir}/src/redis-server src/testing_scripts/redis/redis.conf"
 

@@ -143,7 +143,7 @@ bin_DIR=${compiled_package_dir}
 results_DIR=${output_log_dir}/liblinear-huge-`uname -r`-${MEMTIS_COOLING_PERIOD}
 mkdir -p ${results_DIR}
 BENCH_BIN=third_party/tmp/liblinear-multicore-2.47
-BENCH_RUN="${BENCH_BIN}/train -s 6 -m 80 -e 0.000001  ${BENCH_BIN}/liblinear-multicore-2.47/webspam_wc_normalized_trigram.svm"
+BENCH_RUN="${BENCH_BIN}/train -s 6 -m 80 -e 0.000001  ${BENCH_BIN}/webspam_wc_normalized_trigram.svm"
 
 func_prepare
 func_main

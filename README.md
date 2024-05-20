@@ -54,7 +54,7 @@ We tested our code on both Ubuntu 22.04 and Debian 11. You may face technical is
 **Dependencies**
 To compile our Nomad module and userspace applications, you also need to:
 ```
-sudo apt install gcc g++ make pkg-config time python2 openjdk-11-jre rsync unzip
+sudo apt install gcc g++ make pkg-config time python2 openjdk-11-jre rsync unzip maven
 ```
 When running Redis, we require YCSB, which requires `python` to be `python2`. In that case you need to create a soft link as below:
 ```

@@ -34,13 +34,14 @@ function func_main() {
     ${bin_DIR}/tpp_mem_access  -frun=${bin_DIR}/thrashing-15G.bin -anon \
                 -fwarmup=${bin_DIR}/thrashing-15G.bin --logtostderr
 
-    echo please run > /tmp/liblinear_thrashed
+    echo -----------start----------- > ${LOG_DIR}/memory_status.log
+    ${compiled_package_dir}/parse_async_prom -logtostdout >> ${LOG_DIR}/memory_status.log
 
-    PID=`pgrep train`
-    while [ -e /proc/$PID ]
-    do
-        sleep 1
-    done
+    echo please run > /tmp/liblinear_thrashed
+    wait
+    echo -----------finish----------- >> ${LOG_DIR}/memory_status.log
+    ${compiled_package_dir}/parse_async_prom -logtostdout >> ${LOG_DIR}/memory_status.log
+
 }
  
 

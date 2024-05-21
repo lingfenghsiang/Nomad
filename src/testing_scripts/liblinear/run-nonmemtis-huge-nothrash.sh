@@ -30,14 +30,14 @@ function func_main() {
     do
         sleep 1
     done
+    echo -----------start----------- > ${LOG_DIR}/memory_status.log
+    ${compiled_package_dir}/parse_async_prom -logtostdout >> ${LOG_DIR}/memory_status.log
 
     echo please run > /tmp/liblinear_thrashed
+    wait
+    echo -----------finish----------- >> ${LOG_DIR}/memory_status.log
+    ${compiled_package_dir}/parse_async_prom -logtostdout >> ${LOG_DIR}/memory_status.log
 
-    PID=`pgrep train`
-    while [ -e /proc/$PID ]
-    do
-        sleep 1
-    done
 }
  
 

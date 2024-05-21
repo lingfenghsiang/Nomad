@@ -25,8 +25,13 @@ function func_main() {
     func_cache_flush
     sleep 2
 
+    echo -----------start----------- > ${LOG_DIR}/memory_status.log
+    ${compiled_package_dir}/parse_async_prom -logtostdout >> ${LOG_DIR}/memory_status.log
+
 	${TIME} -f "execution time %e (s)" \
     ${BENCH_RUN}  2>&1 | tee ${LOG_DIR}/output.log  
+    echo -----------finish----------- >> ${LOG_DIR}/memory_status.log
+    ${compiled_package_dir}/parse_async_prom -logtostdout >> ${LOG_DIR}/memory_status.log
 
 }
 

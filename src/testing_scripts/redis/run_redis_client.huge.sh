@@ -31,7 +31,7 @@ cat /proc/vmstat  >> ${output_dir}/redis.${tag}.log
 ${compiled_package_dir}/parse_async_prom -logtostdout >> ${output_dir}/redis.${tag}.log
 
 cd ${ycsb_dir}
-(time ./bin/ycsb run redis -s -P ${curr_dir}src/testing_scripts/redis/workloada.${tag} -threads 10 -p redis.host=localhost -p redis.port=6379 >> ${output_dir}/redis.${tag}.log
+(time ./bin/ycsb run redis -s -P ${curr_dir}/src/testing_scripts/redis/workloada.${tag} -threads 10 -p redis.host=localhost -p redis.port=6379 >> ${output_dir}/redis.${tag}.log
 ) 2>&1 | tee -a ${output_dir}/redis.${tag}.log
 cd ${curr_dir}
 

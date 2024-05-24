@@ -18,7 +18,20 @@ done
 
 for f in zipfan_hottest_10G.read.log   zipfan_hottest_13.5G.read.log   zipfan_hottest_27G.read.log zipfan_hottest_10G.write.log  zipfan_hottest_13.5G.write.log  zipfan_hottest_27G.write.log
 do
-sub_output_dir=microbench_memtis
+sub_output_dir=microbench_memtis-2000
+mkdir -p ${output_dir}/${sub_output_dir}
+
+if [ ! -f "${data_dir}/${sub_output_dir}/$f" ]; then
+    echo "Error: ${data_dir}/${sub_output_dir}/$f does not exist."
+    exit 1
+fi
+
+python3 src/post_processing/log_parser.py -l ${data_dir}/${sub_output_dir}/$f -c ${config_dir}/config_bw.json -o ${output_dir}/${sub_output_dir}/$f.csv
+done
+
+for f in zipfan_hottest_10G.read.log   zipfan_hottest_13.5G.read.log   zipfan_hottest_27G.read.log zipfan_hottest_10G.write.log  zipfan_hottest_13.5G.write.log  zipfan_hottest_27G.write.log
+do
+sub_output_dir=microbench_memtis-2000000
 mkdir -p ${output_dir}/${sub_output_dir}
 
 if [ ! -f "${data_dir}/${sub_output_dir}/$f" ]; then

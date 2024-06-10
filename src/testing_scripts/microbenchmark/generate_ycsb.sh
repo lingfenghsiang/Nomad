@@ -82,6 +82,11 @@ func16(){
     ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-27block  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -o $offset -f ${output_dir}/run_zipfan_hottest_27block.bin
 }
 
+func17(){
+   ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-24G  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 0 -f ${output_dir}/zipfan_hottest-24G.bin
+   ${ycsb_dir}/bin/ycsb.sh run basic -P ${script_dir}/workloada-24G  | python3 ${script_dir}/filter_access_pattern.py | python3 ${script_dir}/write_binary_data.py -p 1 -f ${output_dir}/zipfan_firsttouch-24G.bin
+}
+
 func1 &
 func2 &
 func3 &
@@ -98,5 +103,6 @@ func13 &
 func14 &
 func15 &
 func16 &
+func17 &
 wait
 echo "pattern files generated"

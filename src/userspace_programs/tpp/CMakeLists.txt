@@ -71,6 +71,23 @@ absl::status
 absl::statusor
 )
 
+add_executable(trigger_llc_miss_access
+trigger_memtis.cc
+parse_binary_array.cc
+)
+target_link_libraries(trigger_llc_miss_access
+glog
+gflags
+absl::log_internal_check_op
+absl::strings
+absl::flags_parse 
+absl::log
+absl::log_initialize
+absl::log_flags
+absl::status
+absl::statusor  
+)
+
 # add tests below
 
 add_executable(

@@ -100,3 +100,4 @@ mv src/testing_scripts/microbenchmark/tmp/*.bin src/tmp/output/
 mv src/tmp/*.deb src/tmp/output/
 mv src/tmp/build/tpp/tpp_mem_access src/tmp/output/
 mv src/tmp/build/tpp/parse_async_prom src/tmp/output/
+mv src/tmp/build/tpp/trigger_llc_miss_access src/tmp/output/

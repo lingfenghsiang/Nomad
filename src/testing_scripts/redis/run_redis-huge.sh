@@ -36,27 +36,18 @@ echo "Run test: $arg_a"
 
 
 case1(){
-    bash src/testing_scripts/redis/start_redis_server.sh &
+    bash src/testing_scripts/redis/start_redis_server.sh huge &
     sleep 30
-    bash src/testing_scripts/redis/run_redis_client.small.sh
+    bash src/testing_scripts/redis/run_redis_client.huge.sh
     sleep 60
 
     wait
 }
 
 case2(){
-    bash src/testing_scripts/redis/start_redis_server.sh &
+    bash src/testing_scripts/redis/start_redis_server.sh huge-nothrash &
     sleep 30
-    bash src/testing_scripts/redis/run_redis_client.large.sh
-    sleep 60
-
-    wait
-}
-
-case3(){
-    bash src/testing_scripts/redis/start_redis_server.sh &
-    sleep 30
-    bash src/testing_scripts/redis/run_redis_client.noevict.sh
+    bash src/testing_scripts/redis/run_redis_client.huge.noevict.sh
     sleep 60
 
     wait
@@ -67,13 +58,10 @@ case3(){
 if [ "$arg_a" -eq 0 ]; then
     case1
     case2
-    case3
 elif [ "$arg_a" -eq 1 ]; then
     case1
 elif [ "$arg_a" -eq 2 ]; then
     case2
-elif [ "$arg_a" -eq 3 ]; then
-    case3
 else
 echo unavailable option
 fi

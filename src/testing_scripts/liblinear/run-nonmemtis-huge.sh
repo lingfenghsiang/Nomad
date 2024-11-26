@@ -33,7 +33,6 @@ function func_main() {
     
     ${bin_DIR}/tpp_mem_access  -frun=${bin_DIR}/thrashing-15G.bin -anon \
                 -fwarmup=${bin_DIR}/thrashing-15G.bin --logtostderr
-
     echo -----------start----------- > ${LOG_DIR}/memory_status.log
     ${compiled_package_dir}/parse_async_prom -logtostdout >> ${LOG_DIR}/memory_status.log
 
@@ -51,8 +50,8 @@ function func_main() {
 # thp_setting=madvise 
 source global_dirs.sh
 bin_DIR=${compiled_package_dir}
-results_DIR=${output_log_dir}/liblinear-`uname -r`
+results_DIR=${output_log_dir}/liblinear-huge-`uname -r`
 mkdir -p ${results_DIR}
 BENCH_BIN=third_party/tmp/liblinear-multicore-2.47
-BENCH_RUN="${BENCH_BIN}/train -s 6 -m 16 -e 0.000001  ${BENCH_BIN}/HIGGS"
+BENCH_RUN="${BENCH_BIN}/train -s 6 -m 80 -e 0.000001  ${BENCH_BIN}/webspam_wc_normalized_trigram.svm"
 func_main

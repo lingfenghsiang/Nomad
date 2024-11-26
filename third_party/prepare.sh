@@ -23,8 +23,13 @@ make
 wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/HIGGS.xz
 xz -d HIGGS.xz
 
+wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/webspam_wc_normalized_trigram.svm.xz
+xz -d webspam_wc_normalized_trigram.svm.xz
+
 cd ${curr_dir}
 
-wget https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz -P third_party/tmp/
-tar -xvf third_party/tmp/ycsb-0.17.0.tar.gz --directory third_party/tmp
+git clone https://github.com/brianfrankcooper/YCSB.git third_party/tmp/YCSB
+cd third_party/tmp/YCSB
+patch -p1 < ../../ycsb.diff
+mvn -pl site.ycsb:redis-binding -am clean package
 cd ${curr_dir}

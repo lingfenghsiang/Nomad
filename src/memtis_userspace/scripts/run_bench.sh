@@ -34,8 +34,7 @@ function func_memtis_setting() {
     echo 100000 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
 	 
     echo 2000000 | tee /sys/kernel/mm/htmm/htmm_cooling_period
-	# echo 100 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
-	# echo 200 | tee /sys/kernel/mm/htmm/htmm_cooling_period
+	 
     echo 2 | tee /sys/kernel/mm/htmm/htmm_mode
     echo 500 | tee /sys/kernel/mm/htmm/htmm_demotion_period_in_ms
     echo 500 | tee /sys/kernel/mm/htmm/htmm_promotion_period_in_ms
@@ -127,8 +126,8 @@ function func_main() {
     # set memcg for htmm
     sudo ${DIR}/scripts/set_htmm_memcg.sh htmm remove
     sudo ${DIR}/scripts/set_htmm_memcg.sh htmm $$ enable
-	# BENCH_DRAM=7000MB
-	# echo dram size ${BENCH_DRAM} is !!!!!!!!!!!!!!
+	BENCH_DRAM=${FAST_TIER_MEMORY}
+	# echo dram size is ${BENCH_DRAM} !!!!!!!!!!!!!!
     # sudo ${DIR}/scripts/set_mem_size.sh htmm 0 ${BENCH_DRAM}
     sleep 2
 

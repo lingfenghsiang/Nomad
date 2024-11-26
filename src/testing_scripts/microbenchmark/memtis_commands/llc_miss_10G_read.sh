@@ -79,9 +79,9 @@ function func_main() {
 
 
 
-    # make directory for run-memtis-13.5g-read/results-pr
-    mkdir -p ${result_dir}/run-memtis-13.5g-read/microbench/
-    LOG_DIR=${result_dir}/run-memtis-13.5g-read/microbench/
+    # make directory for run-memtis-10g-read/results-pr
+    mkdir -p ${result_dir}/run-memtis-10block/microbench/
+    LOG_DIR=${result_dir}/run-memtis-10block/microbench/
 
     # set memcg for htmm
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
@@ -126,6 +126,9 @@ DIR=${output_log_dir}
 memtis_userspace=src/memtis_userspace
 result_dir=${output_log_dir}/microbench_memtis-${MEMTIS_COOLING_PERIOD}
 mkdir -p ${result_dir}
-BENCH_RUN="${compiled_package_dir}/tpp_mem_access -fwarmup=${compiled_package_dir}/warmup_zipfan_hottest_13.5G.bin -frun=${compiled_package_dir}/run_zipfan_hottest_13.5G.bin -fout=${result_dir}/zipfan_hottest_13.5G.read.log --logtostderr -sleep=10 -work=2"
+
+
+
+BENCH_RUN="${compiled_package_dir}/trigger_llc_miss_access -pattern ${compiled_package_dir}/warmup_zipfan_hottest_10block.bin,${compiled_package_dir}/run_zipfan_hottest_10block.bin,${compiled_package_dir}/run_zipfan_hottest_10block.bin,${compiled_package_dir}/run_zipfan_hottest_10block.bin,${compiled_package_dir}/run_zipfan_hottest_10block.bin --blocksz=1g --output=${result_dir}/10plus10block.log --logtostderr -interval=10"
 func_prepare
 func_main

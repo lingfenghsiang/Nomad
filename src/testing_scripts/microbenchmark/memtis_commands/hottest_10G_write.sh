@@ -28,14 +28,14 @@ function func_memtis_setting() {
     echo 1 | tee /sys/kernel/mm/htmm/htmm_thres_hot
     echo 2 | tee /sys/kernel/mm/htmm/htmm_split_period
     echo 100000 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
-
-    echo 2000000 | tee /sys/kernel/mm/htmm/htmm_cooling_period
-
+	 
+    echo ${MEMTIS_COOLING_PERIOD} | tee /sys/kernel/mm/htmm/htmm_cooling_period
+	 
     echo 2 | tee /sys/kernel/mm/htmm/htmm_mode
     echo 500 | tee /sys/kernel/mm/htmm/htmm_demotion_period_in_ms
     echo 500 | tee /sys/kernel/mm/htmm/htmm_promotion_period_in_ms
     echo 4 | tee /sys/kernel/mm/htmm/htmm_gamma
-
+    ###  cpu cap (per mille) for ksampled
     echo 30 | tee /sys/kernel/mm/htmm/ksampled_soft_cpu_quota
 
 
@@ -80,14 +80,14 @@ function func_main() {
 
 
     # make directory for run-memtis-10g-write/results-pr
-    mkdir -p ${DIR}/microbench_memtis/run-memtis-10g-write/microbench/
-    LOG_DIR=${DIR}/microbench_memtis/run-memtis-10g-write/microbench/
+    mkdir -p ${result_dir}/run-memtis-10g-write/microbench/
+    LOG_DIR=${result_dir}/run-memtis-10g-write/microbench/
 
     # set memcg for htmm
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm $$ enable
 
-	echo dram size ${BENCH_DRAM} is !!!!!!!!!!!!!!
+	echo dram size is ${BENCH_DRAM} !!!!!!!!!!!!!!
     sudo ${memtis_userspace}/scripts/set_mem_size.sh htmm 0 ${BENCH_DRAM}
     sleep 2
 
@@ -120,11 +120,11 @@ function func_main() {
 ################################ Main ##################################
 CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 thp_setting=always
-# BENCH_DRAM=7000MB # max memory for node 0
+BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0
 
 DIR=${output_log_dir}
 memtis_userspace=src/memtis_userspace
-result_dir=${output_log_dir}/microbench_memtis
+result_dir=${output_log_dir}/microbench_memtis-${MEMTIS_COOLING_PERIOD}
 mkdir -p ${result_dir}
 BENCH_RUN="${compiled_package_dir}/tpp_mem_access -fwarmup=${compiled_package_dir}/warmup_zipfan_hottest_10G.bin -frun=${compiled_package_dir}/run_zipfan_hottest_10G.bin -fout=${result_dir}/zipfan_hottest_10G.write.log --logtostderr -sleep=10 -work=0"
 func_prepare

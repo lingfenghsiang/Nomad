@@ -3,7 +3,7 @@
 source global_dirs.sh
 
 
-tag=large
+tag=huge
 curr_dir=$PWD
 ycsb_dir=${curr_dir}/third_party/tmp/YCSB
 
@@ -15,7 +15,7 @@ fi
 
 mkdir -p ${output_dir}
 cd ${ycsb_dir}
-./bin/ycsb load redis -s -P ${curr_dir}/src/testing_scripts/redis/workloada.${tag} -threads 10 -p redis.host=localhost -p redis.port=6379 
+./bin/ycsb load redis -s -P ${curr_dir}/src/testing_scripts/redis/workloada.${tag} -threads 10 -p redis.host=localhost -p redis.port=6379
 cd ${curr_dir}
 echo > ${output_dir}/redis.noevict.log
 

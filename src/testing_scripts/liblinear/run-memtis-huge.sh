@@ -22,7 +22,7 @@ function func_cache_flush() {
 }
 
 function func_memtis_setting() {
-    # memtis settings
+    # memtis settings 
     echo 199 | tee /sys/kernel/mm/htmm/htmm_sample_period
     echo 100007 | tee /sys/kernel/mm/htmm/htmm_inst_sample_period
     echo 1 | tee /sys/kernel/mm/htmm/htmm_thres_hot
@@ -55,8 +55,8 @@ function func_memtis_setting() {
 
 function func_prepare() {
     echo "Preparing benchmark start..."
-    # setting for cpu
-
+    # setting for cpu 
+    
     sh -c "echo off > /sys/devices/system/cpu/smt/control"
 
     sleep 1
@@ -70,62 +70,80 @@ function func_prepare() {
 	sudo echo 0 > /proc/sys/kernel/numa_balancing
 	# set configs
 	func_memtis_setting
-
+	 
 }
 
 function func_main() {
-    ${memtis_userspace}/bin/kill_ksampled #also kill ssh
-    TIME="time"
+    ${memtis_userspace}/bin/kill_ksampled  
+    TIME="/usr/bin/time"
+    rm /tmp/liblinear_initialized
+    rm /tmp/liblinear_thrashed
+     
+    
 
+    # make directory for/run-memtis results-liblinear
+    mkdir -p ${results_DIR}/results-liblinear
+    LOG_DIR=${results_DIR}/results-liblinear 
 
-
-    # make directory for run-memtis-13.5g-read/results-pr
-    mkdir -p ${result_dir}/run-memtis-13.5g-read/microbench/
-    LOG_DIR=${result_dir}/run-memtis-13.5g-read/microbench/
+ 
 
     # set memcg for htmm
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm $$ enable
-
+	 
 	echo dram size is ${BENCH_DRAM} !!!!!!!!!!!!!!
     sudo ${memtis_userspace}/scripts/set_mem_size.sh htmm 0 ${BENCH_DRAM}
     sleep 2
 
 
+     
 
-
+     
     # flush cache
     func_cache_flush
     sleep 2
 
+     
 
-    cat /proc/vmstat | grep -e anon -e demote -e migrate -e promote -e file > ${LOG_DIR}/before_vmstat.log
+     
+	 
+	${memtis_userspace}/bin/launch_bench_nopid     ${BENCH_RUN}  2>&1  | tee ${LOG_DIR}/output.log    &
 
-	${TIME} -f "execution time %e (s)" \
-	${memtis_userspace}/bin/launch_bench_nopid     ${BENCH_RUN}  2>&1 \
-	    | tee ${LOG_DIR}/output.log
+    while [ ! -e "/tmp/liblinear_initialized" ]
+    do
+        sleep 1
+    done
 
+    ${bin_DIR}/tpp_mem_access  -frun=${bin_DIR}/thrashing-15G.bin -anon \
+                -fwarmup=${bin_DIR}/thrashing-15G.bin --logtostderr
 
+    echo please run > /tmp/liblinear_thrashed
 
-    cat /proc/vmstat | grep -e anon -e demote -e migrate -e promote -e file > ${LOG_DIR}/after_vmstat.log
-    sleep 2
+    PID=`pgrep train`
+    while [ -e /proc/$PID ]
+    do
+        sleep 1
+    done
 
-    sudo dmesg -c > ${LOG_DIR}/dmesg.txt
-    # disable htmm
-    sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm $$ disable
+     
+ 
 }
-
+ 
 
 
 ################################ Main ##################################
+BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0 
 CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
-thp_setting=always
+thp_setting=always 
+
 BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0
 
-DIR=${output_log_dir}
 memtis_userspace=src/memtis_userspace
-result_dir=${output_log_dir}/microbench_memtis-${MEMTIS_COOLING_PERIOD}
-mkdir -p ${result_dir}
-BENCH_RUN="${compiled_package_dir}/tpp_mem_access -fwarmup=${compiled_package_dir}/warmup_zipfan_hottest_13.5G.bin -frun=${compiled_package_dir}/run_zipfan_hottest_13.5G.bin -fout=${result_dir}/zipfan_hottest_13.5G.read.log --logtostderr -sleep=10 -work=2"
+bin_DIR=${compiled_package_dir}
+results_DIR=${output_log_dir}/liblinear-huge-`uname -r`-${MEMTIS_COOLING_PERIOD}
+mkdir -p ${results_DIR}
+BENCH_BIN=third_party/tmp/liblinear-multicore-2.47
+BENCH_RUN="${BENCH_BIN}/train -s 6 -m 80 -e 0.000001  ${BENCH_BIN}/webspam_wc_normalized_trigram.svm"
+
 func_prepare
 func_main

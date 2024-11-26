@@ -29,13 +29,13 @@ function func_memtis_setting() {
     echo 2 | tee /sys/kernel/mm/htmm/htmm_split_period
     echo 100000 | tee /sys/kernel/mm/htmm/htmm_adaptation_period
 	 
-    echo 2000000 | tee /sys/kernel/mm/htmm/htmm_cooling_period
- 
+    echo ${MEMTIS_COOLING_PERIOD} | tee /sys/kernel/mm/htmm/htmm_cooling_period
+	 
     echo 2 | tee /sys/kernel/mm/htmm/htmm_mode
     echo 500 | tee /sys/kernel/mm/htmm/htmm_demotion_period_in_ms
     echo 500 | tee /sys/kernel/mm/htmm/htmm_promotion_period_in_ms
     echo 4 | tee /sys/kernel/mm/htmm/htmm_gamma
-    
+    ###  cpu cap (per mille) for ksampled
     echo 30 | tee /sys/kernel/mm/htmm/ksampled_soft_cpu_quota
 
 
@@ -88,7 +88,7 @@ function func_main() {
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm remove
     sudo ${memtis_userspace}/scripts/set_htmm_memcg.sh htmm $$ enable
 	 
-	echo dram size ${BENCH_DRAM} is !!!!!!!!!!!!!!
+	echo dram size is ${BENCH_DRAM} !!!!!!!!!!!!!!
     sudo ${memtis_userspace}/scripts/set_mem_size.sh htmm 0 ${BENCH_DRAM}
     sleep 2
 
@@ -116,12 +116,12 @@ function func_main() {
 ################################ Main ##################################
 CONFIG_CXL_MODE=${MEMTIS_CXL_OPTION}
 thp_setting=always 
-# BENCH_DRAM=7000MB # max memory for node 0 
+BENCH_DRAM=${FAST_TIER_MEMORY} # max memory for node 0 
 
 
 memtis_userspace=src/memtis_userspace
 bin_DIR=${compiled_package_dir}
-results_DIR=${output_log_dir}/pageranking-`uname -r`
+results_DIR=${output_log_dir}/pageranking-`uname -r`-${MEMTIS_COOLING_PERIOD}
 BENCH_BIN=third_party/tmp/gapbs
 BENCH_RUN="${BENCH_BIN}/pr  -u26 -k20 -i10 -n100"
  

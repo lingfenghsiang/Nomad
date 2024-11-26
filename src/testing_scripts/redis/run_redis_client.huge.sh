@@ -3,14 +3,14 @@
 source global_dirs.sh
 
 
-tag=large
+tag=huge
 curr_dir=$PWD
 ycsb_dir=${curr_dir}/third_party/tmp/YCSB
 
 if [ `uname -r` = "5.15.19-htmm" ];then
-	output_dir=${curr_dir}/${output_log_dir}/redis-${tag}-noevict-`uname -r`-${MEMTIS_COOLING_PERIOD}
+	output_dir=${curr_dir}/${output_log_dir}/redis-${tag}-`uname -r`-${MEMTIS_COOLING_PERIOD}
 else
-    output_dir=${curr_dir}/${output_log_dir}/redis-${tag}-noevict-`uname -r`
+    output_dir=${curr_dir}/${output_log_dir}/redis-${tag}-`uname -r`
 fi
 
 mkdir -p ${output_dir}

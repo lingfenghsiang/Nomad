@@ -1,0 +1,13 @@
+diff --git a/redis/src/main/java/site/ycsb/db/RedisClient.java b/redis/src/main/java/site/ycsb/db/RedisClient.java
+index 2de9ad23..5bb99374 100644
+--- a/redis/src/main/java/site/ycsb/db/RedisClient.java
++++ b/redis/src/main/java/site/ycsb/db/RedisClient.java
+@@ -86,7 +86,7 @@ public class RedisClient extends DB {
+       if (redisTimeout != null){
+         jedis = new Jedis(host, port, Integer.parseInt(redisTimeout));
+       } else {
+-        jedis = new Jedis(host, port);
++        jedis = new Jedis(host, port, 3600000);
+       }
+       ((Jedis) jedis).connect();
+     }

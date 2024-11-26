@@ -54,7 +54,7 @@ We tested our code on both Ubuntu 22.04 and Debian 11. You may face technical is
 **Dependencies**
 To compile our Nomad module and userspace applications, you also need to:
 ```
-sudo apt install gcc g++ make pkg-config time python2 openjdk-11-jre rsync unzip
+sudo apt install gcc g++ make pkg-config time python2 openjdk-11-jre rsync unzip maven
 ```
 When running Redis, we require YCSB, which requires `python` to be `python2`. In that case you need to create a soft link as below:
 ```
@@ -101,6 +101,7 @@ node   0   1
 The hardware memory size may greatly influence the performance of microbenchmarks, especially for [medium working set size case](#figure-8). For medium size microbenchmark, you need to have free memory almost equivalent to the RSS (13.5GB in the case of our microbenchmark). A slightly larger local memory will turn it into the small working set size case where the whole RSS is accommodated in local DRAM.
 
 To set local DRAM sizes, you may add `GRUB_CMDLINE_LINUX="memmap=nn[KMG]!ss[KMG]"` in your `/etc/default/grub` file. For more details, you may check [this link](https://pmem.io/blog/2016/02/how-to-emulate-persistent-memory/).
+*Note*: You need to put "memmap" option in a single line, because our switch kernel script may comment this line accordingly.
 
 When tuning the local memory size, you may need pay attention to the space overhead for `struct page`. For instance, let's say you have 32GB of local DRAM and 512GB of persistent memory. Each 4KB persistent memory requires a 64-byte `struct page` on local DRAM, which results in 8GB `struct page` on local DRAM allocated, even though no application is running.
 
@@ -265,8 +266,12 @@ sudo reboot
 3. **On testing (CXL/PMem) machine**. Setting up the environment.
    The global directory is set in file `global_dirs.sh`.
 	`compiled_package_dir` is the compiled kernel and access pattern files, it's the directory `/home/foobar/Downloads/output` in Step 2, if you send output to the aforementioned example directory.
+
 	`output_log_dir` is the directory that contains the results.
+
 	`MEMTIS_CXL_OPTION` is an option for Memtis. This option is used to select event and determine memory node. We already hard coded the event and the memory node. Please always set it to `on`, whether or not it's a CXL machine.
+
+	`FAST_TIER_MEMORY` is the fast tier memory size. You must specify that when you run memtis. Recommended to set it to the free memory size when the machine starts.
    ```
 	compiled_package_dir=src/tmp/output
 	output_log_dir=src/tmp/results
@@ -334,17 +339,36 @@ sudo reboot
 	sudo bash src/testing_scripts/redis/run_redis.sh -r 2
 	sudo bash src/testing_scripts/redis/run_redis.sh -r 3
 	```
+	If your machine has capacity layer significantly large (45GB or more, you may run huge test):
+	```
+	sudo bash src/testing_scripts/redis/run_redis-huge.sh
+	```
+	To run them individually
+	```
+	sudo bash src/testing_scripts/redis/run_redis-huge.sh -r 1
+
+	sudo bash src/testing_scripts/redis/run_redis-huge.sh -r 2
+	```
 
 11. **On testing (CXL/PMem) machine**. Run PageRanking. 30-45minutes. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 		
 	```
 	sudo bash src/testing_scripts/pageranking/run.sh
 	```
+	If your machine has capacity layer significantly large (45GB or more, you may run huge test):
+	```
+	sudo bash src/testing_scripts/pageranking/run-huge.sh
+	```
 12. **On testing (CXL/PMem) machine**. Run Liblinear. 30-45minutes. (Run Nomad, TPP, Memtis, and an original kernel, the very first kernel when the OS was installed. If it fails for Nomad and TPP, please restart the machine, go over step 7 and 8 and do this step.)
 	
 	```
 	sudo bash src/testing_scripts/liblinear/run.sh
 	```
+	If your machine has capacity layer significantly large (45GB or more, you may run huge test):
+	```
+	sudo bash src/testing_scripts/liblinear/run-huge.sh
+	```
+
 13. **On testing (CXL/PMem) machine**. If you need to test a different kernel, go to step 6. Otherwise, you are done with running the tests.
 
 14. **On testing (CXL/PMem) machine**. Run robustness test. 15 minutes. This is for **Nomad only** and the hardware configuration should be 16GB local DRAM + 16GB slow memory (CXL/PMem).

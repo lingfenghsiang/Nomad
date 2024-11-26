@@ -40,9 +40,9 @@ function func_main() {
  
 source global_dirs.sh
 bin_DIR=${compiled_package_dir}
-results_DIR=${output_log_dir}/pageranking-`uname -r`
+results_DIR=${output_log_dir}/pageranking-huge-`uname -r`
 mkdir -p ${results_DIR}
 BENCH_BIN=third_party/tmp/gapbs
-BENCH_RUN="${BENCH_BIN}/pr  -u26 -k20 -i10 -n100"
+BENCH_RUN="${BENCH_BIN}/pr  -u28 -k20 -i10 -n100"
 
 func_main

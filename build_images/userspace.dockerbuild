@@ -1,0 +1,14 @@
+FROM ubuntu:24.04
+
+WORKDIR /root
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt update && apt install -y cmake build-essential wget  && \
+    cd /tmp && apt update && \
+    wget https://github.com/gflags/gflags/archive/refs/tags/v2.2.2.tar.gz && \
+    tar -xvf v2.2.2.tar.gz && \
+    mkdir -p gflags-2.2.2/build && pushd gflags-2.2.2/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=/opt/googlelibs && \
+    make -j$(nproc) && make install && popd && \
+    rm -rf gflags-2.2.2 v2.2.2.tar.gz

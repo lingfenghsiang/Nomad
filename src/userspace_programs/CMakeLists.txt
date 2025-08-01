@@ -4,6 +4,8 @@ project(UserspacePrograms)
 
 OPTION(ENABLE_SANI "Compile tests with sanitizers" OFF)
 
+set(CMAKE_PREFIX_PATH "/opt/googlelibs")
+
 IF(NOT ENABLE_SANI)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
   set(BUILD_SHARED_LIBS OFF)
